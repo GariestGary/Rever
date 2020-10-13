@@ -52,7 +52,7 @@ public class ObjectPoolManager : ManagerBase, IExecute
         Pools.Add(tag, objectPool);
     }
 
-    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, string poolTag = "")
+    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, bool callAwakes = true, Transform parent = null, string poolTag = "")
 	{
         GameObject obj;
 
@@ -74,12 +74,15 @@ public class ObjectPoolManager : ManagerBase, IExecute
             obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
             _container.Inject(obj);
 
-            IAwake[] awakes = obj.GetComponents<IAwake>();
-            awakes.Concat(obj.GetComponentsInChildren<IAwake>());
-
-			foreach (var awake in awakes)
+            if(callAwakes)
 			{
-                awake.OnAwake();
+                IAwake[] awakes = obj.GetComponents<IAwake>();
+                awakes.Concat(obj.GetComponentsInChildren<IAwake>());
+
+			    foreach (var awake in awakes)
+			    {
+                    awake.OnAwake();
+			    }
 			}
         }
 

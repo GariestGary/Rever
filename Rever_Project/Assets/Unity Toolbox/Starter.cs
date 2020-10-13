@@ -13,11 +13,11 @@ public class Starter : MonoBehaviour
 
 	private void Awake()
 	{
-#if UNITY_EDITOR
-		Debug.unityLogger.logEnabled = true;
-#else
-		Debug.unityLogger.logEnabled = false;
-#endif
+//#if UNITY_EDITOR
+//		Debug.unityLogger.logEnabled = true;
+//#else
+//		Debug.unityLogger.logEnabled = false;
+//#endif
 
 		Application.targetFrameRate = targetFrameRate;
 

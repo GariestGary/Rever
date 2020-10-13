@@ -18,6 +18,12 @@ public class GameManager : ManagerBase, IExecute
 	private ObjectPoolManager pool;
 	private ResourcesManager res;
 
+	private LookCamera cam;
+	private GameObject spawnPoint;
+	private GameObject player;
+
+	private GameObject instantiatedPlayer;
+
 	[Inject]
 	public void Constructor(ObjectPoolManager pool, ResourcesManager res)
 	{
@@ -27,20 +33,22 @@ public class GameManager : ManagerBase, IExecute
 
 	public void OnExecute()
 	{
+		cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
+		spawnPoint = GameObject.FindGameObjectWithTag(spawnPointTag);
+		player = res.GetResourceByName<GameObject>(playerPrefabName);
+
 		SpawnPlayer();
 	}
 
 	private void SpawnPlayer()
 	{
-		GameObject spawnPoint = GameObject.FindGameObjectWithTag(spawnPointTag);
-		GameObject player = res.GetResourceByName<GameObject>(playerPrefabName);
-		LookCamera cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
-
 		if(spawnPoint && player && cam)
 		{
-			GameObject instantiatedPlayer = pool.Instantiate(player, spawnPoint.transform.position, Quaternion.identity);
+			instantiatedPlayer = pool.Instantiate(player, spawnPoint.transform.position, Quaternion.identity, false);
 
 			cam.SetTarget(instantiatedPlayer.transform);
+
+			Debug.Log("Spawned player");
 		}
 	}
 }

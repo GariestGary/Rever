@@ -10,45 +10,40 @@ public class UpdateManager : ManagerBase, IExecute
 	private List<ITick> ticks = new List<ITick>();
 	private List<IFixedTick> fixedTicks = new List<IFixedTick>();
 	private List<ILateTick> lateTicks = new List<ILateTick>();
-	private List<IExecute> inits = new List<IExecute>();
 
 	public void Add(object obj)
 	{
-		var mng = Toolbox.GetManager<UpdateManager>();
-
 		if (obj is ITick)
 		{
-			mng.ticks.Add(obj as ITick);
+			ticks.Add(obj as ITick);
 		}
 
 		if (obj is IFixedTick)
 		{
-			mng.fixedTicks.Add(obj as IFixedTick);
+			fixedTicks.Add(obj as IFixedTick);
 		}
 
 		if (obj is ILateTick)
 		{
-			mng.lateTicks.Add(obj as ILateTick);
+			lateTicks.Add(obj as ILateTick);
 		}
 	}
 
 	public void Remove(object obj)
 	{
-		var mng = Toolbox.GetManager<UpdateManager>();
-
 		if (obj is ITick)
 		{
-			mng.ticks.Remove(obj as ITick);
+			ticks.Remove(obj as ITick);
 		}
 
 		if (obj is IFixedTick)
 		{
-			mng.fixedTicks.Remove(obj as IFixedTick);
+			fixedTicks.Remove(obj as IFixedTick);
 		}
 
 		if (obj is ILateTick)
 		{
-			mng.lateTicks.Remove(obj as ILateTick);
+			lateTicks.Remove(obj as ILateTick);
 		}
 	}
 
@@ -95,6 +90,8 @@ public class UpdateManager : ManagerBase, IExecute
 
 	public void InitializeFromScene()
 	{
+		Debug.Log("Initializing from scene");
+
 		var allUpdates = FindObjectsOfType(typeof(MonoBehaviour)).Where(x =>
 			x is IAwake ||
 			x is ITick ||
@@ -102,16 +99,18 @@ public class UpdateManager : ManagerBase, IExecute
 			x is IFixedTick
 		);
 
+		Debug.Log("founded " + allUpdates.Count() + " updateables");
+
 		foreach (var upd in allUpdates)
 		{
+			Debug.Log(upd.GetType());
+
 			if(upd is IAwake)
 			{
 				(upd as IAwake).OnAwake();
 			}
-			else
-			{
-				Add(upd);
-			}
+
+			Add(upd);
 		}
 	}
 }
