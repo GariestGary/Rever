@@ -13,11 +13,12 @@ public class Controller2D : RaycastController
 	[Space]
 	[SerializeField] private float wallSlideSpeedMax = 3;
 	[SerializeField] private float wallStickTime = .25f;
+	[Space]
+	[SerializeField] private float accelerationTimeAirborne = .2f;
+	[SerializeField] private float accelerationTimeGrounded = .1f;
+	[SerializeField] private float moveSpeed = 6;
+	[SerializeField] private float timeToWallUnstick;
 
-	private float accelerationTimeAirborne = .2f;
-	private float accelerationTimeGrounded = .1f;
-	private float moveSpeed = 6;
-	private float timeToWallUnstick;
 	private float gravity;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
