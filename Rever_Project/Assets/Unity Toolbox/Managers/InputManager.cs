@@ -16,7 +16,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 	public Vector2 PointerDelta { get; private set; }
 	public Vector2 MoveInput { get; private set; } = Vector2.zero;
 
-	public event Action OnClick;
+	public event Action OnClickDown;
+	public event Action OnClickUp;
 
 	public event Action JumpStart;
 	public event Action JumpEnd;
@@ -66,11 +67,12 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		controls.Default.Click.performed += _ => 
 		{
 			Clicked = true;
-			OnClick?.Invoke();
+			OnClickDown?.Invoke();
 		};
 		controls.Default.Click.canceled += _ =>
 		{
 			Clicked = false;
+			OnClickUp?.Invoke();
 		};
 
 		controls.Default.Jump.performed += _ => JumpStart?.Invoke();

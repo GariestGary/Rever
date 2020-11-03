@@ -10,8 +10,6 @@ public class LookCamera : MonoBehaviour, IAwake
 	public void OnAwake()
 	{
 		cam = GetComponent<CinemachineVirtualCamera>();
-
-		Debug.Log(cam);
 	}
 
 	public void SetTarget(Transform target)

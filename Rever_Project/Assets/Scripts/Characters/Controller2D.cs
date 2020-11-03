@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class Controller2D : RaycastController
 {
 	[SerializeField] private float maxJumpHeight = 4;
 	[SerializeField] private float minJumpHeight = 1;
 	[SerializeField] private float timeToJumpApex = .4f;
+	[SerializeField] private float fallMultiplier = .2f;
 	[Space]
+	[SerializeField] private bool canStickWall;
 	[SerializeField] private Vector2 wallJumpClimb;
 	[SerializeField] private Vector2 wallJumpOff;
 	[SerializeField] private Vector2 wallLeap;
@@ -17,28 +20,36 @@ public class Controller2D : RaycastController
 	[SerializeField] private float accelerationTimeAirborne = .2f;
 	[SerializeField] private float accelerationTimeGrounded = .1f;
 	[SerializeField] private float moveSpeed = 6;
-	[SerializeField] private float timeToWallUnstick;
+	[SerializeField] private float maxSlopeAngle = 80;
+	[SerializeField] private float externalForcesDamp = 5;
+
+	public Vector3 Velocity => velocity;
+	public CollisionInfo Collisions => collisions;
+	public event Action OnJump = delegate { };
 
 	private float gravity;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
 	private Vector3 velocity;
+	private Vector3 externalVelocity;
+	private Vector2 externalVelocitySmoothing;
 	private float velocityXSmoothing;
+	private float timeToWallUnstick;
 
 	private bool wallSliding;
 	private int wallDirX;
 
 	private Vector2 directionalInput;
+	private CollisionInfo collisions;
 
-	public float maxSlopeAngle = 80;
+	private Transform t;
 
-	public CollisionInfo collisions;
-	[HideInInspector]
-	public Vector2 playerInput;
 
-	public override void OnAwake() 
+	public override void OnAwake()
 	{
 		base.OnAwake();
+
+		t = transform;
 
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
@@ -47,7 +58,7 @@ public class Controller2D : RaycastController
 		collisions.faceDir = 1;
 	}
 
-	public void SetDirectionalInput(Vector2 input)
+	public void HandleInput(Vector2 input)
 	{
 		directionalInput = input;
 	}
@@ -57,7 +68,7 @@ public class Controller2D : RaycastController
 		CalculateVelocity();
 		HandleWallSliding();
 
-		MoveUpdate(velocity * Time.fixedDeltaTime, directionalInput);
+		MoveUpdate(velocity * Time.fixedDeltaTime);
 
 		if (collisions.above || collisions.below)
 		{
@@ -70,45 +81,53 @@ public class Controller2D : RaycastController
 				velocity.y = 0;
 			}
 		}
-	}
-	public void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform)
-	{
-		MoveUpdate(moveAmount, Vector2.zero, standingOnPlatform);
+
+		//ExternalForceHandle();
 	}
 
-	private void MoveUpdate(Vector2 moveAmount, Vector2 input, bool standingOnPlatform = false) 
+	private void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform = false)
 	{
-		UpdateRaycastOrigins ();
+		UpdateRaycastOrigins();
 
-		collisions.Reset ();
+		collisions.Reset();
 		collisions.moveAmountOld = moveAmount;
-		playerInput = input;
 
-		if (moveAmount.y < 0) 
+		if (moveAmount.y < 0)
 		{
 			DescendSlope(ref moveAmount);
 		}
 
-		if (moveAmount.x != 0) 
+		if (moveAmount.x != 0)
 		{
 			collisions.faceDir = (int)Mathf.Sign(moveAmount.x);
 		}
 
-		HorizontalCollisions (ref moveAmount);
-		if (moveAmount.y != 0) 
+		HorizontalCollisions(ref moveAmount);
+
+		if(moveAmount.y != 0)
 		{
-			VerticalCollisions (ref moveAmount);
+			VerticalCollisions(ref moveAmount);
 		}
 
-		transform.Translate (moveAmount);
+		t.Translate(moveAmount);
 
-		if (standingOnPlatform) 
+		if (standingOnPlatform)
 		{
 			collisions.below = true;
 		}
 	}
 
-	void HorizontalCollisions(ref Vector2 moveAmount) 
+	public void AddForce(Vector3 amount)
+	{
+		velocity += amount;
+	}
+
+	public void SetForce(Vector3 amount)
+	{
+		velocity = amount;
+	}
+
+	private void HorizontalCollisions(ref Vector2 moveAmount) 
 	{
 		float directionX = collisions.faceDir;
 		float rayLength = Mathf.Abs (moveAmount.x) + skinWidth;
@@ -170,7 +189,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	void VerticalCollisions(ref Vector2 moveAmount) 
+	private void VerticalCollisions(ref Vector2 moveAmount) 
 	{
 		float directionY = Mathf.Sign (moveAmount.y);
 		float rayLength = Mathf.Abs (moveAmount.y) + skinWidth;
@@ -185,7 +204,7 @@ public class Controller2D : RaycastController
 
 			if (hit) 
 			{
-				if (hit.collider.tag == "Through") {
+				if (hit.collider.CompareTag("Through")) {
 					if (directionY == 1 || hit.distance == 0) 
 					{
 						continue;
@@ -194,7 +213,7 @@ public class Controller2D : RaycastController
 					{
 						continue;
 					}
-					if (playerInput.y == -1) 
+					if (directionalInput.y == -1) 
 					{
 						collisions.fallingThroughPlatform = true;
 						Invoke("ResetFallingThroughPlatform",.5f);
@@ -235,7 +254,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	void ClimbSlope(ref Vector2 moveAmount, float slopeAngle, Vector2 slopeNormal) 
+	private void ClimbSlope(ref Vector2 moveAmount, float slopeAngle, Vector2 slopeNormal) 
 	{
 		float moveDistance = Mathf.Abs (moveAmount.x);
 		float climbmoveAmountY = Mathf.Sin (slopeAngle * Mathf.Deg2Rad) * moveDistance;
@@ -251,7 +270,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	void DescendSlope(ref Vector2 moveAmount) 
+	private void DescendSlope(ref Vector2 moveAmount) 
 	{
 		RaycastHit2D maxSlopeHitLeft = Physics2D.Raycast (raycastOrigins.bottomLeft, Vector2.down, Mathf.Abs (moveAmount.y) + skinWidth, collisionMask);
 		RaycastHit2D maxSlopeHitRight = Physics2D.Raycast (raycastOrigins.bottomRight, Vector2.down, Mathf.Abs (moveAmount.y) + skinWidth, collisionMask);
@@ -292,7 +311,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	void SlideDownMaxSlope(RaycastHit2D hit, ref Vector2 moveAmount) 
+	private void SlideDownMaxSlope(RaycastHit2D hit, ref Vector2 moveAmount) 
 	{
 
 		if (hit) 
@@ -312,7 +331,7 @@ public class Controller2D : RaycastController
 
 	public void OnJumpInputDown()
 	{
-		if (wallSliding)
+		if (wallSliding && canStickWall)
 		{
 			if (wallDirX == directionalInput.x)
 			{
@@ -329,8 +348,10 @@ public class Controller2D : RaycastController
 				velocity.x = -wallDirX * wallLeap.x;
 				velocity.y = wallLeap.y;
 			}
+
+			OnJump.Invoke();
 		}
-		if (collisions.below)
+		else if (collisions.below)
 		{
 			if (collisions.slidingDownMaxSlope)
 			{
@@ -338,11 +359,14 @@ public class Controller2D : RaycastController
 				{ // not jumping against max slope
 					velocity.y = maxJumpVelocity * collisions.slopeNormal.y;
 					velocity.x = maxJumpVelocity * collisions.slopeNormal.x;
+
+					OnJump.Invoke();
 				}
 			}
 			else
 			{
 				velocity.y = maxJumpVelocity;
+				OnJump.Invoke();
 			}
 		}
 	}
@@ -356,8 +380,10 @@ public class Controller2D : RaycastController
 	}
 
 
-	void HandleWallSliding()
+	private void HandleWallSliding()
 	{
+		if (!canStickWall) return;
+
 		wallDirX = (collisions.left) ? -1 : 1;
 		wallSliding = false;
 		if ((collisions.left || collisions.right) && !collisions.below && velocity.y < 0)
@@ -392,18 +418,21 @@ public class Controller2D : RaycastController
 
 	}
 
-	void CalculateVelocity()
+	private void CalculateVelocity()
 	{
 		float targetVelocityX = directionalInput.x * moveSpeed;
+
 		velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborne);
-		velocity.y += gravity * Time.fixedDeltaTime;
+
+		velocity.y += (velocity.y < 0 ? fallMultiplier : 1) * gravity * Time.fixedDeltaTime;
 	}
 
-	void ResetFallingThroughPlatform() 
+	private void ResetFallingThroughPlatform() 
 	{
 		collisions.fallingThroughPlatform = false;
 	}
 
+	[System.Serializable]
 	public struct CollisionInfo 
 	{
 		public bool above, below;
