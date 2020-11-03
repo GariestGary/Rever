@@ -164,6 +164,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		anim.SetFloat("Velocity X", controller.Velocity.x);
 		anim.SetFloat("Velocity Y", controller.Velocity.y);
 		anim.SetBool("Grounded", controller.Collisions.above || controller.Collisions.below);
+		anim.SetBool("Sliding Wall", controller.WallSliding);
+		anim.SetFloat("Wall Sliding Input X", input.MoveInput.x * -controller.WallDirectionX);
 	}
 
 	public void UpdateIK()

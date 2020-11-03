@@ -24,6 +24,8 @@ public class Controller2D : RaycastController
 	[SerializeField] private float externalForcesDamp = 5;
 
 	public Vector3 Velocity => velocity;
+	public bool WallSliding => wallSliding;
+	public int WallDirectionX => wallDirX;
 	public CollisionInfo Collisions => collisions;
 	public event Action OnJump = delegate { };
 
