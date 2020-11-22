@@ -26,6 +26,7 @@ public class Controller2D : RaycastController
 	public Vector3 Velocity => velocity;
 	public bool WallSliding => wallSliding;
 	public int WallDirectionX => wallDirX;
+	public float LastInputFacing => lastInputFacing;
 	public bool CanStickWall => canStickWall;
 	public CollisionInfo Collisions => collisions;
 	public event Action OnJump = delegate { };
@@ -41,6 +42,7 @@ public class Controller2D : RaycastController
 	private Vector2 externalVelocitySmoothing;
 	private float velocityXSmoothing;
 	private float timeToWallUnstick;
+	private float lastInputFacing;
 
 	private bool wallSliding;
 	private int wallDirX;
@@ -70,6 +72,11 @@ public class Controller2D : RaycastController
 	{
 		if (useInput)
 		{
+			if(input != Vector2.zero)
+			{
+				lastInputFacing = input.x;
+			}
+
 			directionalInput = input;
 		}
 		else
