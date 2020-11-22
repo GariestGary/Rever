@@ -16,6 +16,8 @@ public sealed class Toolbox : Singleton<Toolbox>
     private Dictionary<Type, object> managers = new Dictionary<Type, object>();
     private CompositeDisposable disposables = new CompositeDisposable();
 
+    public CompositeDisposable Disposables => disposables;
+
     public static void AddManager(object obj)
     {
         if (obj is ManagerBase)

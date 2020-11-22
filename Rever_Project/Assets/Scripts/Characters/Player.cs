@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using UnityEngine.U2D.IK;
 using UnityEngine.U2D.Animation;
+using UniRx;
 
 [RequireComponent (typeof (Controller2D))]
 public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
@@ -15,26 +16,9 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private Transform graphicsRoot;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
-	[Header("Legs IK")]
-	[SerializeField] private Transform leftLegRaycastPoint;
-	[SerializeField] private Transform rightLegRaycastPoint;
 	[Space]
-	[SerializeField] private Transform rightLegSolverTransform;
-	[SerializeField] private Transform leftLegSolverTransform;
-	[Space]
-	[SerializeField] private LimbSolver2D rightLegSolver;
-	[SerializeField] private LimbSolver2D leftLegSolver;
-	[Space]
-	[SerializeField] private Transform leftFeetBone;
-	[SerializeField] private Transform rightFeetBone;
-	[Space]
-	[SerializeField] private float legsIKRaycastDistance;
-	[SerializeField] private float angleForLegsIK;
-	[Header("Skeleton Height")]
-	[SerializeField] private Transform playerSkeletonRoot;
-	[SerializeField] private float heightCheckDistance;
-	[SerializeField] private float skeletonHeightOffset;
-	[SerializeField] private float skeletonHeightAdjustSpeed;
+	[SerializeField] private LayerMask interactableLayer;
+	[SerializeField] private float interactRadius;
 	[Space]
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
 	public bool Process { get; private set; }
@@ -42,13 +26,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Controller2D controller;
 	private InputManager input;
 	private GameManager game;
+	private MessageManager msg;
+
 	private IUseable currentAbility;
 	private int currentAbilityIndex;
 	private Transform t;
 	private Camera mainCam;
-	private float initialLeftFeetZRotation;
-	private float initialRightFeetZRotation;
 	private float currentGroundAngle;
+	private IInteractable currentInteractable;
 	
 
 	private bool subscribed = false;
@@ -57,12 +42,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Action startUse;
 	private Action stopUse;
 	private Action onJump;
+	private Action tryInteract;
 
 	[Inject]
-	public void Constructor(InputManager input, GameManager game)
+	public void Constructor(InputManager input, GameManager game, MessageManager msg)
 	{
 		this.input = input;
 		this.game = game;
+		this.msg = msg;
 	}
 
 	public void OnAwake() 
@@ -71,31 +58,39 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		t = transform;
 		mainCam = Camera.main;
 
-		abilities.ForEach(a => { if (a is IUseable) (a as IUseable).AbilityAwake(t); });
+		abilities.ForEach(a => { if (a is IUseable) (a as IUseable).AbilityAwake(t, anim); });
 
 		currentAbilityIndex = 0;
 		SetAbility(currentAbilityIndex);
+
+		tryInteract = delegate 
+		{
+			if(currentInteractable != null)
+			{
+				currentInteractable.Interact();
+				input.SetDefaultInputActive(false);
+			}
+		};
 
 		startUse = delegate { currentAbility.StartUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		stopUse = delegate { currentAbility.StopUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
 
-		initialLeftFeetZRotation = leftFeetBone.localEulerAngles.z;
-		initialRightFeetZRotation = rightFeetBone.localEulerAngles.z;
+		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.DIALOG_CLOSED).Subscribe(_ => 
+		{
+			input.SetDefaultInputActive(true);
+		}).AddTo(Toolbox.Instance.Disposables);
 
 		SetSubscribe(true);
 
 	}
 	public void OnTick() 
 	{
-
 		controller.HandleInput(input.MoveInput);
 
 		AnimationUpdate();
 		TurnHandle(input.MoveInput.x);
-		SkeletonHeightHandle();
-
-		UpdateIK();
+		InteractHandle();
 	}
 
 	private void SetAbility(int index)
@@ -111,30 +106,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		Debug.Log("Set ability " + index);
 
 		StartCoroutine(currentAbility.AbilityUpdate());
-	}
-
-	private void SkeletonHeightHandle()
-	{
-		RaycastHit2D hit;
-		float targetHeight;
-
-		Vector2 feetPos = new Vector2(t.position.x, t.position.y - colliderBox.bounds.extents.y);
-		Debug.DrawRay(feetPos, Vector2.down * heightCheckDistance);
-
-		hit = Physics2D.Raycast(feetPos, Vector2.down, heightCheckDistance, groundLayer);
-
-		currentGroundAngle = hit?Math.Abs(Vector2.Angle(Vector2.Perpendicular(hit.normal), Vector2.up)):0;
-
-		if(hit && controller.Collisions.below)
-		{
-			targetHeight = hit.distance + skeletonHeightOffset;
-		}
-		else
-		{
-			targetHeight = skeletonHeightOffset;
-		}
-
-		playerSkeletonRoot.localPosition = new Vector3(playerSkeletonRoot.localPosition.x, -targetHeight, playerSkeletonRoot.localPosition.z);
 	}
 
 	private void TurnHandle(float xInput)
@@ -154,6 +125,39 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		}
 	}
 
+	private void InteractHandle()
+	{
+		if (controller.Velocity == Vector3.zero) return;
+
+		Collider2D interactableCollider = Physics2D.OverlapCircle(t.position, interactRadius, interactableLayer);
+
+		if (interactableCollider == null)
+		{
+			if (currentInteractable != null)
+			{
+				currentInteractable.Exited();
+				currentInteractable = null;
+			}
+
+			return;
+		}
+
+		IInteractable interactable = interactableCollider.GetComponent<IInteractable>();
+
+		if(interactable != null)
+		{
+			if(currentInteractable != null && interactable != currentInteractable)
+			{
+				currentInteractable.Exited();
+				currentInteractable = null;
+			}
+
+			currentInteractable = interactable;
+
+			currentInteractable.Entered();
+		}
+	}
+
 	public void OnFixedTick()
 	{
 		controller.Move();
@@ -168,43 +172,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		anim.SetFloat("Wall Sliding Input X", input.MoveInput.x * -controller.WallDirectionX);
 	}
 
-	public void UpdateIK()
-	{
-		leftFeetBone.localEulerAngles = new Vector3(0, 0, initialLeftFeetZRotation);
-		rightFeetBone.localEulerAngles = new Vector3(0, 0, initialRightFeetZRotation);
-
-		anim.Update(Time.deltaTime);
-
-		if (input.MoveInput.x != 0 || !(controller.Collisions.below && currentGroundAngle > angleForLegsIK))
-		{
-			return;
-		}
-
-		RaycastHit2D leftHit, rightHit;
-
-		leftHit = Physics2D.Raycast(leftLegRaycastPoint.position, Vector2.down, legsIKRaycastDistance, groundLayer);
-		rightHit = Physics2D.Raycast(rightLegRaycastPoint.position, Vector2.down, legsIKRaycastDistance, groundLayer);
-
-		Debug.DrawRay(leftLegRaycastPoint.position, Vector2.down * legsIKRaycastDistance, Color.blue);
-		Debug.DrawRay(rightLegRaycastPoint.position, Vector2.down * legsIKRaycastDistance, Color.blue);
-
-		if (leftHit)
-		{
-			leftFeetBone.localEulerAngles = new Vector3(0, 0, Vector2.Angle(Vector2.Perpendicular(leftHit.normal) * (facingRight ? 1 : -1), Vector2.up));
-			leftLegSolverTransform.position = leftHit.point;
-			leftLegSolver.UpdateIK(1);
-		}
-
-		if(rightHit)
-		{
-			rightFeetBone.localEulerAngles = new Vector3(0, 0, Vector2.Angle(Vector2.Perpendicular(rightHit.normal) * (facingRight?1:-1), Vector2.up));
-			rightLegSolverTransform.position = rightHit.point;
-			rightLegSolver.UpdateIK(1);
-		}
-
-		
-	}
-
 	private void SetSubscribe(bool state)
 	{
 		if(state)
@@ -215,6 +182,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				if(input && controller && anim)
 				{
+					input.Interact += tryInteract;
 					input.OnClickDown += startUse;
 					input.OnClickUp += stopUse;
 					input.JumpStart += controller.OnJumpInputDown;
@@ -233,6 +201,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				if (input && controller && anim)
 				{
+					input.Interact -= tryInteract;
 					input.OnClickDown -= startUse;
 					input.OnClickUp -= stopUse;
 					input.JumpStart -= controller.OnJumpInputDown;

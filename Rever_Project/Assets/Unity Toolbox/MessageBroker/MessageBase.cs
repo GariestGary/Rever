@@ -14,9 +14,4 @@ public class MessageBase
         this.tag = tag;
         this.data = data;
     }
-
-    public static MessageBase Create(object sender, ServiceShareData id, string tag = null)
-    {
-        return new MessageBase(sender, id, tag);
-    }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [CreateAssetMenu(fileName = "Input", menuName = "Toolbox/Managers/Input Manager")]
 public class InputManager : ManagerBase, IExecute, ISceneChange
@@ -21,6 +22,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 	public event Action JumpStart;
 	public event Action JumpEnd;
+
+	public event Action Interact;
 
 	public bool Clicked { get; private set; } = false;
 
@@ -64,11 +67,13 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 			MoveInput = ctx.ReadValue<Vector2>();
 		};
+
 		controls.Default.Click.performed += _ => 
 		{
 			Clicked = true;
 			OnClickDown?.Invoke();
 		};
+
 		controls.Default.Click.canceled += _ =>
 		{
 			Clicked = false;
@@ -78,6 +83,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		controls.Default.Jump.performed += _ => JumpStart?.Invoke();
 		controls.Default.Jump.canceled += _ => JumpEnd?.Invoke();
 
+		controls.Default.Interact.performed += _ => Interact?.Invoke();
+
 		controls.Enable();
 	}
 
@@ -86,6 +93,18 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		controls?.Dispose();
 
 		InitializeControls();
+	}
+
+	public void SetDefaultInputActive(bool state)
+	{
+		if(state)
+		{
+			controls?.Default.Enable();
+		}
+		else
+		{
+			controls?.Default.Disable();
+		}
 	}
 
 	public void OnSceneChange()

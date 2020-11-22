@@ -10,6 +10,9 @@ public class UpdateManager : ManagerBase, IExecute
 	private List<ITick> ticks = new List<ITick>();
 	private List<IFixedTick> fixedTicks = new List<IFixedTick>();
 	private List<ILateTick> lateTicks = new List<ILateTick>();
+	private List<IShutDown> shutDowns = new List<IShutDown>();
+
+	public List<IShutDown> ShutDowns => shutDowns;
 
 	public void Add(object obj)
 	{
@@ -26,6 +29,11 @@ public class UpdateManager : ManagerBase, IExecute
 		if (obj is ILateTick)
 		{
 			lateTicks.Add(obj as ILateTick);
+		}
+
+		if(obj is IShutDown)
+		{
+			shutDowns.Add(obj as IShutDown);
 		}
 	}
 
@@ -99,18 +107,19 @@ public class UpdateManager : ManagerBase, IExecute
 			x is IFixedTick
 		);
 
-		Debug.Log("founded " + allUpdates.Count() + " updateables");
+		Debug.Log("founded " + allUpdates.Count() + " updateables: " + string.Join(" ", allUpdates));
 
 		foreach (var upd in allUpdates)
 		{
-			Debug.Log(upd.GetType());
-
 			if(upd is IAwake)
 			{
 				(upd as IAwake).OnAwake();
 			}
+			else
+			{
+				Add(upd);
+			}
 
-			Add(upd);
 		}
 	}
 }

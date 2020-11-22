@@ -57,6 +57,14 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""10b0f2c6-f012-4565-b903-e804e04fc140"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -149,6 +157,61 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
+                    ""name"": ""DPad"",
+                    ""id"": ""a6c69ad1-03ab-4320-92d0-99bc8775974b"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""a098fc8f-a527-44c4-824a-5f3cef1731c8"",
+                    ""path"": ""<Gamepad>/dpad/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""4c77ef89-7cf0-4ca5-ada4-78ad5042fc3d"",
+                    ""path"": ""<Gamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""0767b2dc-4209-4431-9fdc-68cd4b2fd503"",
+                    ""path"": ""<Gamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""a2f86781-1082-426e-ab97-ad220744bcc3"",
+                    ""path"": ""<Gamepad>/dpad/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
                     ""name"": """",
                     ""id"": ""67409e7d-811c-4e27-9cbb-fda88776f546"",
                     ""path"": ""<Keyboard>/space"",
@@ -156,6 +219,39 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0266fbf-759a-4807-a25b-5422ce94682a"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a9d6e5bb-8cb1-413e-8bd9-4f209716889b"",
+                    ""path"": ""<Gamepad>/dpad/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c641fc34-66ca-49f1-979d-289717ae3d65"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -198,6 +294,7 @@ public class @Controls : IInputActionCollection, IDisposable
         m_Default_PointerDelta = m_Default.FindAction("Pointer Delta", throwIfNotFound: true);
         m_Default_Movement = m_Default.FindAction("Movement", throwIfNotFound: true);
         m_Default_Jump = m_Default.FindAction("Jump", throwIfNotFound: true);
+        m_Default_Interact = m_Default.FindAction("Interact", throwIfNotFound: true);
         // Developer
         m_Developer = asset.FindActionMap("Developer", throwIfNotFound: true);
         m_Developer_ConsoleToggle = m_Developer.FindAction("Console Toggle", throwIfNotFound: true);
@@ -255,6 +352,7 @@ public class @Controls : IInputActionCollection, IDisposable
     private readonly InputAction m_Default_PointerDelta;
     private readonly InputAction m_Default_Movement;
     private readonly InputAction m_Default_Jump;
+    private readonly InputAction m_Default_Interact;
     public struct DefaultActions
     {
         private @Controls m_Wrapper;
@@ -264,6 +362,7 @@ public class @Controls : IInputActionCollection, IDisposable
         public InputAction @PointerDelta => m_Wrapper.m_Default_PointerDelta;
         public InputAction @Movement => m_Wrapper.m_Default_Movement;
         public InputAction @Jump => m_Wrapper.m_Default_Jump;
+        public InputAction @Interact => m_Wrapper.m_Default_Interact;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -288,6 +387,9 @@ public class @Controls : IInputActionCollection, IDisposable
                 @Jump.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnJump;
                 @Jump.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnJump;
                 @Jump.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnJump;
+                @Interact.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
+                @Interact.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
+                @Interact.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -307,6 +409,9 @@ public class @Controls : IInputActionCollection, IDisposable
                 @Jump.started += instance.OnJump;
                 @Jump.performed += instance.OnJump;
                 @Jump.canceled += instance.OnJump;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
         }
     }
@@ -351,6 +456,7 @@ public class @Controls : IInputActionCollection, IDisposable
         void OnPointerDelta(InputAction.CallbackContext context);
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
     public interface IDeveloperActions
     {

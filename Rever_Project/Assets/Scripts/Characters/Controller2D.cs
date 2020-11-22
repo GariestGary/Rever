@@ -26,8 +26,12 @@ public class Controller2D : RaycastController
 	public Vector3 Velocity => velocity;
 	public bool WallSliding => wallSliding;
 	public int WallDirectionX => wallDirX;
+	public bool CanStickWall => canStickWall;
 	public CollisionInfo Collisions => collisions;
 	public event Action OnJump = delegate { };
+	
+	public bool currentAbilityToStickWall = true;
+	public bool useInput = true;
 
 	private float gravity;
 	private float maxJumpVelocity;
@@ -53,16 +57,25 @@ public class Controller2D : RaycastController
 
 		t = transform;
 
-		gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
+		ResetGravity();
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
 
 		collisions.faceDir = 1;
+
+		currentAbilityToStickWall = CanStickWall;
 	}
 
 	public void HandleInput(Vector2 input)
 	{
-		directionalInput = input;
+		if (useInput)
+		{
+			directionalInput = input;
+		}
+		else
+		{
+			directionalInput = Vector2.zero;
+		}
 	}
 
 	public void Move()
@@ -83,8 +96,6 @@ public class Controller2D : RaycastController
 				velocity.y = 0;
 			}
 		}
-
-		//ExternalForceHandle();
 	}
 
 	private void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform = false)
@@ -127,6 +138,16 @@ public class Controller2D : RaycastController
 	public void SetForce(Vector3 amount)
 	{
 		velocity = amount;
+	}
+
+	public void SetGravity(float amount)
+	{
+		gravity = amount;
+	}
+
+	public void ResetGravity()
+	{
+		gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
 	}
 
 	private void HorizontalCollisions(ref Vector2 moveAmount) 
@@ -224,6 +245,7 @@ public class Controller2D : RaycastController
 				}
 
 				moveAmount.y = (hit.distance - skinWidth) * directionY;
+				
 				rayLength = hit.distance;
 
 				if (collisions.climbingSlope) 
@@ -381,10 +403,9 @@ public class Controller2D : RaycastController
 		}
 	}
 
-
 	private void HandleWallSliding()
 	{
-		if (!canStickWall) return;
+		if (!currentAbilityToStickWall) return;
 
 		wallDirX = (collisions.left) ? -1 : 1;
 		wallSliding = false;
@@ -449,6 +470,8 @@ public class Controller2D : RaycastController
 		public Vector2 moveAmountOld;
 		public int faceDir;
 		public bool fallingThroughPlatform;
+
+		public bool Colliding => above || below || left || right;
 
 		public void Reset() 
 		{

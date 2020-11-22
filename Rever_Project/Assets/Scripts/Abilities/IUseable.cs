@@ -7,5 +7,5 @@ public interface IUseable
     void StopUse(Vector2 usePosition);
     void StartUse(Vector2 usePosition);
     IEnumerator AbilityUpdate();
-    void AbilityAwake(Transform character);
+    void AbilityAwake(Transform character, Animator anim);
 }

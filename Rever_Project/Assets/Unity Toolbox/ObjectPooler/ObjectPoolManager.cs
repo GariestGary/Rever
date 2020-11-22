@@ -15,11 +15,13 @@ public class ObjectPoolManager : ManagerBase, IExecute
 	private Transform ObjectPoolParent;
     private Dictionary<string, LinkedList<GameObject>> Pools = new Dictionary<string, LinkedList<GameObject>>();
     private DiContainer _container;
+    private UpdateManager upd;
 
     [Inject]
-    public void Constructor(DiContainer _container)
+    public void Constructor(DiContainer _container, UpdateManager upd)
 	{
         this._container = _container;
+        this.upd = upd;
 	}
 
     public void OnExecute()
@@ -76,14 +78,12 @@ public class ObjectPoolManager : ManagerBase, IExecute
 
             if(callAwakes)
 			{
-                IAwake[] awakes = obj.GetComponents<IAwake>();
-                awakes.Concat(obj.GetComponentsInChildren<IAwake>());
+                obj.GetComponentsInChildren<IAwake>().ToList().ForEach(a => a.OnAwake());
+            }
 
-			    foreach (var awake in awakes)
-			    {
-                    awake.OnAwake();
-			    }
-			}
+            obj.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Add(tick));
+            obj.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Add(tick));
+            obj.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Add(tick));
         }
 
         return obj;
@@ -162,6 +162,8 @@ public class ObjectPoolManager : ManagerBase, IExecute
             ObjectToDespawn.SetActive(false);
             ObjectToDespawn.transform.SetParent(ObjectPoolParent);
         }
+
+        //TODO: delete from update manager
     }
 }
 

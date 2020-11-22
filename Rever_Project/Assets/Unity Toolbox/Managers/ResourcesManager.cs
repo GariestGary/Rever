@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.WSA;
 
 [CreateAssetMenu(menuName = "Toolbox/Managers/Resources")]
 public class ResourcesManager : ManagerBase, IExecute

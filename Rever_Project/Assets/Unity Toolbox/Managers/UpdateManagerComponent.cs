@@ -26,4 +26,9 @@ public class UpdateManagerComponent : MonoBehaviour
 	{
 		mng.LateTick();
 	}
+
+	private void OnDestroy()
+	{
+		mng.ShutDowns.ForEach(x => x.OnShutDown());
+	}
 }
