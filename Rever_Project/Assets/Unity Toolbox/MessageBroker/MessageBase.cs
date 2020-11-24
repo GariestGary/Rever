@@ -7,7 +7,7 @@ public class MessageBase
     public object data { get; private set; } // данные
     public string tag { get; private set; } //тег сообщения
 
-    public MessageBase(object sender, ServiceShareData id, string tag, object data = null)
+    public MessageBase(object sender, ServiceShareData id, object data = null, string tag = "")
     {
         this.sender = sender;
         this.id = id;

@@ -22,9 +22,9 @@ public class MessageManager : ManagerBase, IExecute
         ).Subscribe(_ => next.Invoke()).AddTo(Toolbox.GetManager<MessageManager>().subscriptions);
     }
 
-    public void Send(ServiceShareData id, object sender = null, string tag = "", object data = null)
+    public void Send(ServiceShareData id, object sender = null, object data = null, string tag = "")
     {
-        Broker.Publish(new MessageBase(sender, id, tag, data));
+        Broker.Publish(new MessageBase(sender, id, data, tag));
     }
 
     private void ClearDisposables()

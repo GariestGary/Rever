@@ -16,6 +16,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private Transform graphicsRoot;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
+	[SerializeField] private int initialHitPoints;
 	[Space]
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
@@ -34,7 +35,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Camera mainCam;
 	private float currentGroundAngle;
 	private IInteractable currentInteractable;
-	
+	private HitPoints hp;
 
 	private bool subscribed = false;
 	private bool facingRight = true;
@@ -84,6 +85,19 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		SetSubscribe(true);
 
 	}
+
+	public void Respawn()
+	{
+		hp.Reset();
+		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "Health");
+	}
+
+	public void Hit(int hitAmount)
+	{
+		hp.Hit(hitAmount);
+		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "Health");
+	}
+
 	public void OnTick() 
 	{
 		controller.HandleInput(input.MoveInput);
@@ -212,6 +226,32 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 					subscribed = false;
 				}
 			}
+		}
+	}
+
+	public struct HitPoints
+	{
+		public int maxHitPoints { get; private set; }
+		public int currentHitPoints { get; private set; }
+
+		public void Hit(int amount)
+		{
+			currentHitPoints -= Mathf.Abs(amount);
+		}
+
+		public void SetMaxHitPoints(int amount)
+		{
+			maxHitPoints = Mathf.Abs(amount);
+		}
+
+		public void AddMaxHitPoints(int amount)
+		{
+			maxHitPoints += Mathf.Abs(amount);
+		}
+
+		public void Reset()
+		{
+			currentHitPoints = maxHitPoints;
 		}
 	}
 
