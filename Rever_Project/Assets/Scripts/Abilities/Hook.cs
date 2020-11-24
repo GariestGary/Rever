@@ -5,7 +5,7 @@ using DG.Tweening;
 using RedBlueGames.LiteFSM;
 
 [CreateAssetMenu(menuName = "Game/Abilities/Hook")]
-public class Hook : ScriptableObject, IUseable
+public class Hook : ScriptableObject, IAbility
 {
 	[SerializeField] private float distance = 5;
 	[SerializeField] private float attractionSpeed = 10;
@@ -26,6 +26,8 @@ public class Hook : ScriptableObject, IUseable
 	private LineRenderer line;
 
 	private StateMachine<HookState> fsm;
+
+	public AbilityType type => AbilityType.NONE;
 
 	private enum HookState
 	{

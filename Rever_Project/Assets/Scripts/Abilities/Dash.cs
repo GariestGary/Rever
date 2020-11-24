@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Game/Abilities/Dash")]
-public class Dash : ScriptableObject, IUseable
+public class Dash : ScriptableObject, IAbility
 {
 	[SerializeField] private float dashForce;
 
 	private Controller2D characterController;
+
+	public AbilityType type => AbilityType.DASH;
 
 	public void AbilityAwake(Transform character, Animator anim)
 	{

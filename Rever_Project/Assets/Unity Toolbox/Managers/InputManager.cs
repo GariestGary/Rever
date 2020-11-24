@@ -23,6 +23,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 	public event Action JumpStart;
 	public event Action JumpEnd;
 
+	public event Action Dash;
+
 	public event Action Interact;
 
 	public bool Clicked { get; private set; } = false;
@@ -84,6 +86,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		controls.Default.Jump.canceled += _ => JumpEnd?.Invoke();
 
 		controls.Default.Interact.performed += _ => Interact?.Invoke();
+
+		controls.Default.Dash.performed += _ => Dash?.Invoke();
 
 		controls.Enable();
 	}

@@ -29,7 +29,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private GameManager game;
 	private MessageManager msg;
 
-	private IUseable currentAbility;
+	private IAbility currentAbility;
 	private int currentAbilityIndex;
 	private Transform t;
 	private Camera mainCam;
@@ -95,6 +95,11 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		onJump = delegate { anim.SetTrigger("Jump"); };
 	}
 
+	public void Dash()
+	{
+		(abilities.Where(x => (x as IAbility).type == AbilityType.DASH).FirstOrDefault() as IAbility).StartUse(Vector2.zero);
+	}
+
 	private void InitializeFields()
 	{
 		controller = GetComponent<Controller2D>();
@@ -104,7 +109,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void InitializeAbilities()
 	{
-		abilities.ForEach(a => { if (a is IUseable) (a as IUseable).AbilityAwake(t, anim); });
+		abilities.ForEach(a => { if (a is IAbility) (a as IAbility).AbilityAwake(t, anim); });
 
 		currentAbilityIndex = 0;
 		SetAbility(currentAbilityIndex);
@@ -139,7 +144,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 		currentAbilityIndex = index;
 
-		currentAbility = abilities[currentAbilityIndex] as IUseable;
+		currentAbility = abilities[currentAbilityIndex] as IAbility;
 
 		Debug.Log("Set ability " + index);
 
@@ -226,6 +231,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 					input.OnClickUp += stopUse;
 					input.JumpStart += controller.OnJumpInputDown;
 					input.JumpEnd += controller.OnJumpInputUp;
+					input.Dash += Dash;
 					controller.OnJump += onJump;
 
 					subscribed = true;
@@ -245,6 +251,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 					input.OnClickUp -= stopUse;
 					input.JumpStart -= controller.OnJumpInputDown;
 					input.JumpEnd -= controller.OnJumpInputUp;
+					input.Dash -= Dash;
 					controller.OnJump -= onJump;
 
 					subscribed = false;

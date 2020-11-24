@@ -65,6 +65,14 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Dash"",
+                    ""type"": ""Button"",
+                    ""id"": ""8183c0c1-956e-4866-a8da-010db6b9a37c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -212,6 +220,61 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
+                    ""name"": ""Arrows"",
+                    ""id"": ""a16cce2e-2e6a-4910-b4a7-e95dbd077ff9"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""63a2c80e-108d-40d3-9593-52372f4278a6"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""3f2df6ff-33e9-468c-bc80-526060872675"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""0bee610f-dec7-4507-a667-eeb7f020c193"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""c7384a85-8614-4c9f-a5fa-f317333578a2"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
                     ""name"": """",
                     ""id"": ""67409e7d-811c-4e27-9cbb-fda88776f546"",
                     ""path"": ""<Keyboard>/space"",
@@ -252,6 +315,39 @@ public class @Controls : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fefc932e-bed6-4db1-83d4-624326ddd8c5"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""56b806c5-d9e5-48fd-8508-af6ad8f58171"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""803b9b80-7468-4252-bb46-16437a90e061"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dash"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -295,6 +391,7 @@ public class @Controls : IInputActionCollection, IDisposable
         m_Default_Movement = m_Default.FindAction("Movement", throwIfNotFound: true);
         m_Default_Jump = m_Default.FindAction("Jump", throwIfNotFound: true);
         m_Default_Interact = m_Default.FindAction("Interact", throwIfNotFound: true);
+        m_Default_Dash = m_Default.FindAction("Dash", throwIfNotFound: true);
         // Developer
         m_Developer = asset.FindActionMap("Developer", throwIfNotFound: true);
         m_Developer_ConsoleToggle = m_Developer.FindAction("Console Toggle", throwIfNotFound: true);
@@ -353,6 +450,7 @@ public class @Controls : IInputActionCollection, IDisposable
     private readonly InputAction m_Default_Movement;
     private readonly InputAction m_Default_Jump;
     private readonly InputAction m_Default_Interact;
+    private readonly InputAction m_Default_Dash;
     public struct DefaultActions
     {
         private @Controls m_Wrapper;
@@ -363,6 +461,7 @@ public class @Controls : IInputActionCollection, IDisposable
         public InputAction @Movement => m_Wrapper.m_Default_Movement;
         public InputAction @Jump => m_Wrapper.m_Default_Jump;
         public InputAction @Interact => m_Wrapper.m_Default_Interact;
+        public InputAction @Dash => m_Wrapper.m_Default_Dash;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -390,6 +489,9 @@ public class @Controls : IInputActionCollection, IDisposable
                 @Interact.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
                 @Interact.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
                 @Interact.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnInteract;
+                @Dash.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDash;
+                @Dash.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDash;
+                @Dash.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDash;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -412,6 +514,9 @@ public class @Controls : IInputActionCollection, IDisposable
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
+                @Dash.started += instance.OnDash;
+                @Dash.performed += instance.OnDash;
+                @Dash.canceled += instance.OnDash;
             }
         }
     }
@@ -457,6 +562,7 @@ public class @Controls : IInputActionCollection, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
+        void OnDash(InputAction.CallbackContext context);
     }
     public interface IDeveloperActions
     {
