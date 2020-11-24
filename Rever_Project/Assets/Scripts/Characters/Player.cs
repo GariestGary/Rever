@@ -55,18 +55,29 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	public void OnAwake() 
 	{
-		controller = GetComponent<Controller2D>();
-		t = transform;
-		mainCam = Camera.main;
+		InitializeFields();
+		InitializeAbilities();
+		InitializeDelegates();
 
-		abilities.ForEach(a => { if (a is IUseable) (a as IUseable).AbilityAwake(t, anim); });
+		hp.SetMaxHitPoints(initialHitPoints);
+		hp.Reset();
+	}
 
-		currentAbilityIndex = 0;
-		SetAbility(currentAbilityIndex);
-
-		tryInteract = delegate 
+	private void InitializeSubscribes()
+	{
+		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.DIALOG_CLOSED).Subscribe(_ =>
 		{
-			if(currentInteractable != null)
+			input.SetDefaultInputActive(true);
+		}).AddTo(Toolbox.Instance.Disposables);
+
+		SetSubscribe(true);
+	}
+
+	private void InitializeDelegates()
+	{
+		tryInteract = delegate
+		{
+			if (currentInteractable != null)
 			{
 				currentInteractable.Interact();
 				input.SetDefaultInputActive(false);
@@ -76,14 +87,21 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		startUse = delegate { currentAbility.StartUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		stopUse = delegate { currentAbility.StopUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
+	}
 
-		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.DIALOG_CLOSED).Subscribe(_ => 
-		{
-			input.SetDefaultInputActive(true);
-		}).AddTo(Toolbox.Instance.Disposables);
+	private void InitializeFields()
+	{
+		controller = GetComponent<Controller2D>();
+		t = transform;
+		mainCam = Camera.main;
+	}
 
-		SetSubscribe(true);
+	private void InitializeAbilities()
+	{
+		abilities.ForEach(a => { if (a is IUseable) (a as IUseable).AbilityAwake(t, anim); });
 
+		currentAbilityIndex = 0;
+		SetAbility(currentAbilityIndex);
 	}
 
 	public void Respawn()
@@ -229,32 +247,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		}
 	}
 
-	public struct HitPoints
-	{
-		public int maxHitPoints { get; private set; }
-		public int currentHitPoints { get; private set; }
-
-		public void Hit(int amount)
-		{
-			currentHitPoints -= Mathf.Abs(amount);
-		}
-
-		public void SetMaxHitPoints(int amount)
-		{
-			maxHitPoints = Mathf.Abs(amount);
-		}
-
-		public void AddMaxHitPoints(int amount)
-		{
-			maxHitPoints += Mathf.Abs(amount);
-		}
-
-		public void Reset()
-		{
-			currentHitPoints = maxHitPoints;
-		}
-	}
-
 	private void OnEnable()
 	{
 		Process = true;
@@ -268,5 +260,30 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 		SetSubscribe(false);
 	}
+}
 
+public struct HitPoints
+{
+	public int maxHitPoints { get; private set; }
+	public int currentHitPoints { get; private set; }
+
+	public void Hit(int amount)
+	{
+		currentHitPoints -= Mathf.Abs(amount);
+	}
+
+	public void SetMaxHitPoints(int amount)
+	{
+		maxHitPoints = Mathf.Abs(amount);
+	}
+
+	public void AddMaxHitPoints(int amount)
+	{
+		maxHitPoints += Mathf.Abs(amount);
+	}
+
+	public void Reset()
+	{
+		currentHitPoints = maxHitPoints;
+	}
 }
