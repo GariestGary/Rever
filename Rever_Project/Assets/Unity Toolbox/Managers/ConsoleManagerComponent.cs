@@ -29,5 +29,6 @@ public class ConsoleManagerComponent: MonoBehaviour
         Toolbox.GetManager<ConsoleManager>()?.ProcessCommand(inputValue);
 
         inputField.text = string.Empty;
+        inputField.ActivateInputField();
     }
 }

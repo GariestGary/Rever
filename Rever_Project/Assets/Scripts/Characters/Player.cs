@@ -60,6 +60,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		InitializeAbilities();
 		InitializeDelegates();
 
+		hp = new HitPoints();
 		hp.SetMaxHitPoints(initialHitPoints);
 		hp.Reset();
 	}
@@ -118,13 +119,13 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void Respawn()
 	{
 		hp.Reset();
-		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "Health");
+		msg.Send(ServiceShareData.UPDATE_UI, null, hp, "health");
 	}
 
 	public void Hit(int hitAmount)
 	{
 		hp.Hit(hitAmount);
-		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "health");
+		msg.Send(ServiceShareData.UPDATE_UI, null, hp, "health");
 	}
 
 	public void OnTick() 

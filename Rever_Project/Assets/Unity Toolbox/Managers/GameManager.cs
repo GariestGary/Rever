@@ -26,7 +26,7 @@ public class GameManager : ManagerBase, IExecute
 
 	private LookCamera cam;
 	private GameObject spawnPoint;
-	private GameObject player;
+	private GameObject playerPrefab;
 
 	private LevelHandler currentLevelHandler;
 
@@ -56,7 +56,7 @@ public class GameManager : ManagerBase, IExecute
 		LoadLevel(initLevelName);
 
 		cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
-		player = res.GetResourceByName<GameObject>(playerPrefabName);
+		playerPrefab = res.GetResourceByName<GameObject>(playerPrefabName);
 	}
 
 	public void SetCameraConfiner(Collider2D bounds)
@@ -64,21 +64,25 @@ public class GameManager : ManagerBase, IExecute
 		cam.GetComponent<CinemachineConfiner>().m_BoundingShape2D = bounds;
 	}
 
+	public void ResetPlayer()
+	{
+		instantiatedPlayer.transform.position = spawnPoint.transform.position;
+		instantiatedPlayer.GetComponent<Player>().Respawn();
+	}
+
 	private void SpawnPlayer()
 	{
-		if(spawnPoint && player && cam)
+		if(spawnPoint && playerPrefab && cam)
 		{
 			if(instantiatedPlayer == null)
 			{
-				instantiatedPlayer = pool.Instantiate(player, spawnPoint.transform.position, Quaternion.identity, true);
+				instantiatedPlayer = pool.Instantiate(playerPrefab, spawnPoint.transform.position, Quaternion.identity, true);
 				cam.SetTarget(instantiatedPlayer.transform);
 			}
 			else
 			{
 				instantiatedPlayer.transform.position = spawnPoint.transform.position;
 			}
-
-			
 
 			Debug.Log("Spawned player");
 		}
