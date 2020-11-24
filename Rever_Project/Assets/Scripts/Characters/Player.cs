@@ -114,12 +114,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 		if (xInput > 0 && !facingRight)
 		{
-			//TODO: make animation turn
+			//TODO: make animation turn... or not...
+			graphicsRoot.localEulerAngles = new Vector3(0, 0, 0);
 			facingRight = true;
 		}
 
 		if (xInput < 0 && facingRight)
 		{
+			graphicsRoot.localEulerAngles = new Vector3(0, 180, 0);
 			facingRight = false;
 		}
 	}
