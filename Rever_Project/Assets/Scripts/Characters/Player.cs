@@ -56,6 +56,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void OnAwake() 
 	{
 		InitializeFields();
+		InitializeSubscribes();
 		InitializeAbilities();
 		InitializeDelegates();
 
@@ -68,6 +69,11 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.DIALOG_CLOSED).Subscribe(_ =>
 		{
 			input.SetDefaultInputActive(true);
+		}).AddTo(Toolbox.Instance.Disposables);
+
+		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
+		{
+			Hit((int)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SetSubscribe(true);
@@ -113,7 +119,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void Hit(int hitAmount)
 	{
 		hp.Hit(hitAmount);
-		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "Health");
+		msg.Send(ServiceShareData.UPDATE_UI, this, hp, "health");
 	}
 
 	public void OnTick() 
@@ -262,6 +268,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	}
 }
 
+[System.Serializable]
 public struct HitPoints
 {
 	public int maxHitPoints { get; private set; }
@@ -285,5 +292,10 @@ public struct HitPoints
 	public void Reset()
 	{
 		currentHitPoints = maxHitPoints;
+	}
+
+	public override string ToString()
+	{
+		return "current hp - " + currentHitPoints + ". max hp - " + maxHitPoints;
 	}
 }

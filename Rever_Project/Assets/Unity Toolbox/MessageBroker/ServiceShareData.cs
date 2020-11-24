@@ -6,5 +6,6 @@ public enum ServiceShareData
 {
     SCENE_CHANGE,
     DIALOG_CLOSED,
-    UPDATE_UI
+    UPDATE_UI,
+    HIT_CHARACTER
 }

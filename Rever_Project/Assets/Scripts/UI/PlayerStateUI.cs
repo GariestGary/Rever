@@ -21,15 +21,18 @@ public class PlayerStateUI : MonoBehaviour, IAwake
 	{
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.UPDATE_UI).Subscribe(x => 
 		{
+			Debug.Log("Updating UI");
+
 			switch(x.tag)
 			{
 				case "health": UpdateHealth((HitPoints)x.data); return;
 			}
-		});
+		}).AddTo(Toolbox.Instance.Disposables);
 	}
 
 	private void UpdateHealth(HitPoints hp)
 	{
-		health.fillAmount = hp.currentHitPoints / hp.maxHitPoints;
+		Debug.Log(hp.ToString());
+		health.fillAmount = (float)hp.currentHitPoints / (float)hp.maxHitPoints;
 	}
 }
