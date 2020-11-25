@@ -5,15 +5,17 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Game/Items/New Item", fileName = "New Item")]
 public class Item: ScriptableObject
 {
+    [SerializeField] private string itemName;
     [SerializeField] private Sprite iconInInventory;
     [SerializeField] private Sprite iconInWorld;
     [SerializeField] private bool canStack;
 
     public Sprite IconInInventory => iconInInventory;
     public Sprite IconInWorld => iconInWorld;
+    public string ItemName => itemName;
 
     private int count;
-    public Item(Sprite invIcon, Sprite worldIcon, bool stackable, int count)
+    public Item(string name, Sprite invIcon, Sprite worldIcon, bool stackable, int count)
 	{
         if(stackable)
 		{
@@ -24,6 +26,7 @@ public class Item: ScriptableObject
             this.count = 1;
 		}
 
+        this.itemName = name;
         this.iconInInventory = invIcon;
         this.iconInWorld = worldIcon;
         this.canStack = stackable;
@@ -45,11 +48,11 @@ public class Item: ScriptableObject
 
     public Item Take(int amount)
 	{
-        return new Item(iconInInventory, iconInWorld, canStack, Remove(amount));
+        return new Item(itemName, iconInInventory, iconInWorld, canStack, Remove(amount));
 	}
 
     public static Item GetMock()
 	{
-        return new Item(null, null, true, 1);
+        return new Item("Mock", null, null, true, 1);
 	}
 }
