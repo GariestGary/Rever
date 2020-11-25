@@ -9,5 +9,5 @@ public abstract class DefaultCommand : ScriptableObject, IConsoleCommand
 
 	public string CommandWord => commandWord;
 
-	public abstract bool Process(string[] args);
+	public abstract CommandProcessedMessage Process(string[] args);
 }

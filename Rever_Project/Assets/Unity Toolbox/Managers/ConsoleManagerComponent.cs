@@ -15,10 +15,12 @@ public class ConsoleManagerComponent: MonoBehaviour
 
         if (uiCanvas.activeSelf)
         {
+            Toolbox.GetManager<InputManager>().TrySetDefaultInputActive(true, false);
             uiCanvas.SetActive(false);
         }
         else
         {
+            Toolbox.GetManager<InputManager>().TrySetDefaultInputActive(false, false);
             uiCanvas.SetActive(true);
             inputField.ActivateInputField();
         }

@@ -5,9 +5,8 @@ using System.Collections.Generic;
 [CreateAssetMenu(menuName = "Toolbox/Commands/Log Command", fileName = "Log Command")]
 public class LogCommand : DefaultCommand
 {
-	public override bool Process(string[] args)
+	public override CommandProcessedMessage Process(string[] args)
 	{
-		Debug.Log(string.Join(" ", args));
-		return true;
+		return CommandProcessedMessage.Send(true, string.Join(" ", args));
 	}
 }

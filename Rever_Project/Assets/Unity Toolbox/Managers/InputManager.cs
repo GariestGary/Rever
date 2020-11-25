@@ -27,6 +27,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 	public event Action Interact;
 
+	private bool disabledByGameplay;
+
 	public bool Clicked { get; private set; } = false;
 
 	public Controls GetBindings()
@@ -99,14 +101,19 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		InitializeControls();
 	}
 
-	public void SetDefaultInputActive(bool state)
+	public void TrySetDefaultInputActive(bool state, bool byGameplay)
 	{
 		if(state)
 		{
-			controls?.Default.Enable();
+			if(byGameplay || !disabledByGameplay)
+			{
+				disabledByGameplay = false;
+				controls?.Default.Enable();
+			}
 		}
 		else
 		{
+			disabledByGameplay = byGameplay;
 			controls?.Default.Disable();
 		}
 	}

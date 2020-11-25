@@ -5,10 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Toolbox/Commands/Reset Player Command", fileName = "Reset Player Command")]
 public class ResetPlayerCommand : DefaultCommand
 {
-	public override bool Process(string[] args)
+	public override CommandProcessedMessage Process(string[] args)
 	{
 		Toolbox.GetManager<GameManager>().ResetPlayer();
-		Debug.Log("Player resetted");
-		return true;
+		return CommandProcessedMessage.Send(true, "Player resetted");
 	}
 }

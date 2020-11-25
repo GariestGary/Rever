@@ -69,7 +69,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	{
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.DIALOG_CLOSED).Subscribe(_ =>
 		{
-			input.SetDefaultInputActive(true);
+			input.TrySetDefaultInputActive(true, true);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
@@ -87,7 +87,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			if (currentInteractable != null)
 			{
 				currentInteractable.Interact();
-				input.SetDefaultInputActive(false);
+				input.TrySetDefaultInputActive(false, true);
 			}
 		};
 

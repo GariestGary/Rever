@@ -35,10 +35,30 @@ public class ConsoleManager : ManagerBase
                 continue;
             }
 
-            if (command.Process(args))
+            CommandProcessedMessage msg = command.Process(args);
+
+            if (msg.succesfull)
             {
+                Debug.Log(msg.message);
                 return;
             }
         }
     }
+}
+
+public struct CommandProcessedMessage
+{
+    public bool succesfull;
+    public string message;
+
+    public CommandProcessedMessage(bool succesfull, string message)
+	{
+        this.succesfull = succesfull;
+        this.message = message;
+	}
+
+    public static CommandProcessedMessage Send(bool succesfull, string message)
+	{
+        return new CommandProcessedMessage(succesfull, message);
+	}
 }

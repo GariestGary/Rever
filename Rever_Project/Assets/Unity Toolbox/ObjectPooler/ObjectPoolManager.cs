@@ -88,7 +88,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
                 AddPool(poolTag, prefab, defaultPoolSize, removePoolOnLevelChange);
 			}
 
-            obj = GetObject(poolTag, position, rotation, parent);
+            obj = TryGetObject(poolTag, position, rotation, parent);
 		}
         else
 		{
@@ -108,7 +108,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         return obj;
 	}
 
-    public GameObject GetObject(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
+    public GameObject TryGetObject(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
     {
         if (!Pools.ContainsKey(poolTag))
         {
