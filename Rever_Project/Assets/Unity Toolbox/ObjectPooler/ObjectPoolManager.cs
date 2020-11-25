@@ -6,7 +6,7 @@ using System.Linq;
 using Zenject;
 
 [CreateAssetMenu(menuName = "Toolbox/Managers/Object Pool Manager", fileName = "Object Pool")]
-public class ObjectPoolManager : ManagerBase, IExecute
+public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 {
     [SerializeField] private int defaultPoolSize = 50;
     [SerializeField] private int minObjectsCountToCreateNew = 5;
@@ -16,6 +16,7 @@ public class ObjectPoolManager : ManagerBase, IExecute
     private Dictionary<string, LinkedList<GameObject>> Pools = new Dictionary<string, LinkedList<GameObject>>();
     private DiContainer _container;
     private UpdateManager upd;
+    private LinkedList<GameObject> objectsToDestroyOnLevelChange = new LinkedList<GameObject>();
 
     [Inject]
     public void Constructor(DiContainer _container, UpdateManager upd)
@@ -33,11 +34,29 @@ public class ObjectPoolManager : ManagerBase, IExecute
 
         for (int i = 0; i < PoolsList.Count; i++)
         {
-            AddPool(PoolsList[i].tag, PoolsList[i].pooledObject, PoolsList[i].size);
+            AddPool(PoolsList[i].tag, PoolsList[i].pooledObject, PoolsList[i].size, false);
         }
     }
 
-    public void AddPool(string tag, GameObject obj, int size)
+    public void AddPool(Pool poolToAdd)
+	{
+        if (Pools.ContainsKey(poolToAdd.tag))
+        {
+            return;
+        }
+
+        LinkedList<GameObject> objectPool = new LinkedList<GameObject>();
+
+        for (int j = 0; j < poolToAdd.size; j++)
+        {
+            CreateNewPoolObject(poolToAdd.pooledObject, objectPool);
+        }
+
+        PoolsList.Add(poolToAdd);
+        Pools.Add(poolToAdd.tag, objectPool);
+    }
+
+    public void AddPool(string tag, GameObject obj, int size, bool removeOnLevelChange)
     {
         if (Pools.ContainsKey(tag))
         {
@@ -54,11 +73,11 @@ public class ObjectPoolManager : ManagerBase, IExecute
         Pools.Add(tag, objectPool);
     }
 
-    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, bool callAwakes = true, Transform parent = null, string poolTag = "")
+    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, bool callAwakes = true, Transform parent = null, string poolTag = "", bool removePoolOnLevelChange = false)
 	{
         GameObject obj;
 
-        if(poolTag != "")
+        if(!string.IsNullOrEmpty(poolTag))
 		{
             if(Pools.ContainsKey(poolTag))
 			{
@@ -66,7 +85,7 @@ public class ObjectPoolManager : ManagerBase, IExecute
 			}
             else
 			{
-                AddPool(poolTag, prefab, defaultPoolSize);
+                AddPool(poolTag, prefab, defaultPoolSize, removePoolOnLevelChange);
 			}
 
             obj = GetObject(poolTag, position, rotation, parent);
@@ -165,6 +184,29 @@ public class ObjectPoolManager : ManagerBase, IExecute
 
         //TODO: delete from update manager
     }
+
+	public void OnSceneChange()
+	{
+        Debug.Log("Cleaning pools");
+
+        PoolsList.Where(x => x.destroyOnLevelChange).ToList().ForEach(x => 
+        {
+            Debug.Log("Removing pool with tag " + x.tag);
+            Pools.TryGetValue(x.tag, out objectsToDestroyOnLevelChange);
+
+			foreach (var obj in objectsToDestroyOnLevelChange)
+			{
+                obj.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Remove(tick));
+                obj.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Remove(tick));
+                obj.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Remove(tick));
+                Destroy(obj);
+			}
+            
+        });
+
+        PoolsList.RemoveAll(x => x.destroyOnLevelChange);
+        Resources.UnloadUnusedAssets();
+	}
 }
 
 [System.Serializable]
@@ -173,4 +215,5 @@ public class Pool
     public string tag;
     public GameObject pooledObject;
     public int size;
+    public bool destroyOnLevelChange;
 }

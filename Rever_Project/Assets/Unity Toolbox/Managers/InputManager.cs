@@ -113,6 +113,6 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 	public void OnSceneChange()
 	{
-		controls?.Dispose();
+		
 	}
 }

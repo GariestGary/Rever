@@ -118,6 +118,7 @@ public class GameManager : ManagerBase, IExecute
 		}
 		else
 		{
+			FindObjectsOfType<MonoBehaviour>().Where(x => x is ISceneChange).ToList().ForEach(x => (x as ISceneChange).OnSceneChange());
 			RemoveUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 			AsyncOperation unloadingLevel = SceneManager.UnloadSceneAsync(currentSceneName);
 			unloadingLevel.completed += _ => { previousSceneUnloaded = true; TryOpenScene(); };

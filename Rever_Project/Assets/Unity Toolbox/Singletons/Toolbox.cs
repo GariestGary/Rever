@@ -6,7 +6,7 @@ using UniRx;
 using UnityEditor;
 using UnityEngine;
 
-public sealed class Toolbox : Singleton<Toolbox>
+public sealed class Toolbox : Singleton<Toolbox>, ISceneChange
 {
     public Toolbox()
 	{
@@ -65,15 +65,7 @@ public sealed class Toolbox : Singleton<Toolbox>
     public static void ClearAll()
     {
         Instance.disposables.Dispose();
-
-        foreach (KeyValuePair<Type, object> entry in Instance.managers)
-        {
-            if(entry.Value is ISceneChange)
-			{
-                (entry.Value as ISceneChange).OnSceneChange();
-			}
-        }
-
+        Instance.OnSceneChange();
         Instance.managers.Clear();
         DOTween.KillAll();
     }
@@ -82,4 +74,15 @@ public sealed class Toolbox : Singleton<Toolbox>
 	{
         ClearAll();
 	}
+
+	public void OnSceneChange()
+	{
+        foreach (KeyValuePair<Type, object> entry in Instance.managers)
+        {
+            if (entry.Value is ISceneChange)
+            {
+                (entry.Value as ISceneChange).OnSceneChange();
+            }
+        }
+    }
 }

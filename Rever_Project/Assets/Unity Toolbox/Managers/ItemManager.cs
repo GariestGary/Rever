@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-[CreateAssetMenu(menuName = "Toolbox/Managers/Game Manager", fileName = "Game")]
+[CreateAssetMenu(menuName = "Toolbox/Managers/Item Manager", fileName = "Item")]
 public class ItemManager : ManagerBase, IExecute
 {
 	[SerializeField] private List<ScriptableObject> items = new List<ScriptableObject>();
