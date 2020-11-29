@@ -43,7 +43,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Action startUse;
 	private Action stopUse;
 	private Action onJump;
-	private Action tryInteract;
 
 	[Inject]
 	public void Constructor(InputManager input, GameManager game, MessageManager msg)
@@ -80,17 +79,17 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		SetSubscribe(true);
 	}
 
+	public void TryIntercat()
+	{
+		if (currentInteractable != null)
+		{
+			currentInteractable.Interact();
+			input.TrySetDefaultInputActive(false, true);
+		}
+	}
+
 	private void InitializeDelegates()
 	{
-		tryInteract = delegate
-		{
-			if (currentInteractable != null)
-			{
-				currentInteractable.Interact();
-				input.TrySetDefaultInputActive(false, true);
-			}
-		};
-
 		startUse = delegate { currentAbility.StartUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		stopUse = delegate { currentAbility.StopUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
@@ -227,7 +226,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				if(input && controller && anim)
 				{
-					input.Interact += tryInteract;
+					Debug.Log("Subscribed");
+					input.Interact += TryIntercat;
 					input.OnClickDown += startUse;
 					input.OnClickUp += stopUse;
 					input.JumpStart += controller.OnJumpInputDown;
@@ -247,7 +247,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				if (input && controller && anim)
 				{
-					input.Interact -= tryInteract;
+					input.Interact -= TryIntercat;
 					input.OnClickDown -= startUse;
 					input.OnClickUp -= stopUse;
 					input.JumpStart -= controller.OnJumpInputDown;

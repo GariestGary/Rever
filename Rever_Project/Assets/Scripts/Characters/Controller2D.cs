@@ -34,12 +34,13 @@ public class Controller2D : RaycastController
 	public bool currentAbilityToStickWall = true;
 	public bool useInput = true;
 
+	public bool UseHorizontalCollisions = true;
+	public bool UseVerticalCollisions = true;
+
 	private float gravity;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
 	private Vector3 velocity;
-	private Vector3 externalVelocity;
-	private Vector2 externalVelocitySmoothing;
 	private float velocityXSmoothing;
 	private float timeToWallUnstick;
 	private float lastInputFacing;
@@ -159,6 +160,8 @@ public class Controller2D : RaycastController
 
 	private void HorizontalCollisions(ref Vector2 moveAmount) 
 	{
+		if (!UseHorizontalCollisions) return;
+
 		float directionX = collisions.faceDir;
 		float rayLength = Mathf.Abs (moveAmount.x) + skinWidth;
 
@@ -221,6 +224,8 @@ public class Controller2D : RaycastController
 
 	private void VerticalCollisions(ref Vector2 moveAmount) 
 	{
+		if (!UseVerticalCollisions) return;
+
 		float directionY = Mathf.Sign (moveAmount.y);
 		float rayLength = Mathf.Abs (moveAmount.y) + skinWidth;
 

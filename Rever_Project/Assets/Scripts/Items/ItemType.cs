@@ -4,5 +4,11 @@ using UnityEngine;
 
 public enum ItemType
 {
-    
+    NONE,
+    HEAL,
+    ENERGY,
+    SOUL,
+    AMMO,
+    KEY,
+    QUEST,
 }

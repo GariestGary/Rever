@@ -141,7 +141,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 		{
             if (pooled[i] != null)
             { 
-                pooled[i].OnSpawn(data);
+                pooled[i].OnSpawn(data, this);
             }
 		}
        
