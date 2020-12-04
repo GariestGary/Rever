@@ -4,15 +4,12 @@ using Zenject;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using UnityEngine.U2D.IK;
-using UnityEngine.U2D.Animation;
 using UniRx;
 
 [RequireComponent (typeof (Controller2D))]
 public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 {
 	[SerializeField] private Animator anim;
-	[SerializeField] private SpriteSkin skin;
 	[SerializeField] private Transform graphicsRoot;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
@@ -103,6 +100,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			if (a is IAbility)
 			{
 				(a as IAbility).AbilityAwake(t, anim);
+				//TODO: Temp
+				(a as IAbility).Enable();
 				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
 			}
 		});
@@ -224,11 +223,16 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 			if (input && controller && anim)
 			{
-				Debug.Log("Subscribed");
 				input.Interact += TryIntercat;
+
 				input.JumpStart += controller.OnJumpInputDown;
 				input.JumpEnd += controller.OnJumpInputUp;
-				input.Dash += abilitiesDictionary[AbilityType.DASH].StopUse;
+
+				input.JumpStart += abilitiesDictionary[AbilityType.DOUBLE_JUMP].StartUse;
+				input.JumpEnd += abilitiesDictionary[AbilityType.DOUBLE_JUMP].StopUse;
+
+				input.Dash += abilitiesDictionary[AbilityType.DASH].StartUse;
+
 				controller.OnJump += onJump;
 
 				subscribed = true;
@@ -245,13 +249,43 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			if (input && controller && anim)
 			{
 				input.Interact -= TryIntercat;
+
 				input.JumpStart -= controller.OnJumpInputDown;
 				input.JumpEnd -= controller.OnJumpInputUp;
+
+				input.JumpStart -= abilitiesDictionary[AbilityType.DOUBLE_JUMP].StartUse;
+				input.JumpEnd -= abilitiesDictionary[AbilityType.DOUBLE_JUMP].StopUse;
+
 				input.Dash -= abilitiesDictionary[AbilityType.DASH].StartUse;
+
 				controller.OnJump -= onJump;
 
 				subscribed = false;
 			}
+		}
+	}
+
+	private void  BindAbilityToInput(Action actionPerformed, Action actionCancelled, AbilityType abilityType)
+	{
+		if(abilitiesDictionary.TryGetValue(abilityType, out IAbility ability))
+		{
+			if (actionPerformed != null)
+				actionPerformed += ability.StartUse;
+
+			if (actionCancelled != null)
+				actionCancelled += ability.StopUse;
+		}
+	}
+
+	private void UnbindAbilityFromInput(Action actionPerformed, Action actionCancelled, AbilityType abilityType)
+	{
+		if (abilitiesDictionary.TryGetValue(abilityType, out IAbility ability))
+		{
+			if (actionPerformed != null)
+				actionPerformed -= ability.StartUse;
+
+			if (actionCancelled != null)
+				actionCancelled -= ability.StopUse;
 		}
 	}
 

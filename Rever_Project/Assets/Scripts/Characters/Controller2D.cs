@@ -407,8 +407,7 @@ public class Controller2D : RaycastController
 			}
 			else
 			{
-				velocity.y = maxJumpVelocity;
-				OnJump.Invoke();
+				ForceJump();
 			}
 		}
 	}
@@ -419,6 +418,12 @@ public class Controller2D : RaycastController
 		{
 			velocity.y = minJumpVelocity;
 		}
+	}
+
+	public void ForceJump()
+	{
+		velocity.y = maxJumpVelocity;
+		OnJump.Invoke();
 	}
 
 	private void HandleWallSliding()

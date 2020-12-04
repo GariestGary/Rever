@@ -86,7 +86,10 @@ public class Dash : ScriptableObject, IAbility
 
 	public void StartUse()
 	{
-		fsm.ChangeState(DashState.IN_DASH);
+		if (enabled)
+		{
+			fsm.ChangeState(DashState.IN_DASH);
+		}
 	}
 
 	public void StopUse()

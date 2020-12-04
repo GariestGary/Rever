@@ -7,12 +7,12 @@ public interface IAbility
     void StopUse();
     void StartUse();
 
-    void Enable();
-    void Disable();
 
     void AbilityUpdate();
     void AbilityFixedUpdate();
     void AbilityAwake(Transform character, Animator anim);
+    void Enable();
+    void Disable();
 
     bool Enabled { get; }
 
