@@ -9,11 +9,14 @@ public class Dash : ScriptableObject, IAbility
 {
 	[SerializeField] private float timeForDash;
 	[SerializeField] private float dashDistance;
-	public AbilityType type => AbilityType.DASH;
+	public AbilityType Type => AbilityType.DASH;
+
+	public bool Enabled => enabled;
 
 	private Controller2D characterController;
 	private float dashForce;
 	private float currentTime;
+	private bool enabled;
 
 	private StateMachine<DashState> fsm;
 
@@ -39,12 +42,16 @@ public class Dash : ScriptableObject, IAbility
 		this.fsm = new StateMachine<DashState>(stateList.ToArray(), DashState.NONE);
 	}
 
-	public IEnumerator AbilityUpdate()
+	public void AbilityUpdate()
 	{
-		while (true)
+		
+	}
+
+	public void AbilityFixedUpdate()
+	{
+		if (enabled)
 		{
 			fsm.Update(Time.fixedDeltaTime);
-			yield return new WaitForFixedUpdate();
 		}
 	}
 
@@ -77,13 +84,26 @@ public class Dash : ScriptableObject, IAbility
 		characterController.useInput = true;
 	}
 
-	public void StartUse(Vector2 usePosition)
+	public void StartUse()
 	{
 		fsm.ChangeState(DashState.IN_DASH);
 	}
 
-	public void StopUse(Vector2 usePosition)
+	public void StopUse()
 	{
 		
 	}
+
+	public void Enable()
+	{
+		fsm.ChangeState(DashState.NONE);
+		enabled = true;
+	}
+
+	public void Disable()
+	{
+		fsm.ChangeState(DashState.NONE);
+		enabled = false;
+	}
+
 }

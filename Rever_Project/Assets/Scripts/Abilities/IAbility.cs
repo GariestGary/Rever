@@ -4,10 +4,17 @@ using UnityEngine;
 
 public interface IAbility
 {
-    void StopUse(Vector2 usePosition);
-    void StartUse(Vector2 usePosition);
-    IEnumerator AbilityUpdate();
+    void StopUse();
+    void StartUse();
+
+    void Enable();
+    void Disable();
+
+    void AbilityUpdate();
+    void AbilityFixedUpdate();
     void AbilityAwake(Transform character, Animator anim);
 
-    AbilityType type { get; }
+    bool Enabled { get; }
+
+    AbilityType Type { get; }
 }

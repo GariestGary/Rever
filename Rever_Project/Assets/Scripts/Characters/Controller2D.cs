@@ -61,10 +61,10 @@ public class Controller2D : RaycastController
 		t = transform;
 
 		ResetGravity();
-		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-		minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
+		CalculateJumpVelocities();
 
 		collisions.faceDir = 1;
+		lastInputFacing = collisions.faceDir;
 
 		currentAbilityToStickWall = CanStickWall;
 	}
@@ -156,6 +156,12 @@ public class Controller2D : RaycastController
 	public void ResetGravity()
 	{
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
+	}
+
+	public void CalculateJumpVelocities()
+	{
+		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
+		minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
 	}
 
 	private void HorizontalCollisions(ref Vector2 moveAmount) 

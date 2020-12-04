@@ -29,19 +29,15 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private GameManager game;
 	private MessageManager msg;
 
-	private IAbility currentAbility;
-	private int currentAbilityIndex;
+	private Dictionary<AbilityType, IAbility> abilitiesDictionary = new Dictionary<AbilityType, IAbility>();
 	private Transform t;
 	private Camera mainCam;
-	private float currentGroundAngle;
 	private IInteractable currentInteractable;
 	private HitPoints hp;
 
 	private bool subscribed = false;
 	private bool facingRight = true;
 
-	private Action startUse;
-	private Action stopUse;
 	private Action onJump;
 
 	[Inject]
@@ -55,8 +51,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void OnAwake() 
 	{
 		InitializeFields();
-		InitializeSubscribes();
 		InitializeAbilities();
+		InitializeSubscribes();
 		InitializeDelegates();
 
 		hp = new HitPoints();
@@ -76,7 +72,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			Hit((int)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
-		SetSubscribe(true);
+		SubscribeInput();
 	}
 
 	public void TryIntercat()
@@ -90,14 +86,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void InitializeDelegates()
 	{
-		startUse = delegate { currentAbility.StartUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
-		stopUse = delegate { currentAbility.StopUse(mainCam.ScreenToWorldPoint(input.PointerPosition)); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
-	}
-
-	public void Dash()
-	{
-		(abilities.Where(x => (x as IAbility).type == AbilityType.DASH).FirstOrDefault() as IAbility).StartUse(Vector2.zero);
 	}
 
 	private void InitializeFields()
@@ -109,10 +98,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void InitializeAbilities()
 	{
-		abilities.ForEach(a => { if (a is IAbility) (a as IAbility).AbilityAwake(t, anim); });
-
-		currentAbilityIndex = 0;
-		SetAbility(currentAbilityIndex);
+		abilities.ForEach(a => 
+		{
+			if (a is IAbility)
+			{
+				(a as IAbility).AbilityAwake(t, anim);
+				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
+			}
+		});
 	}
 
 	public void Respawn()
@@ -134,21 +127,23 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		AnimationUpdate();
 		TurnHandle(input.MoveInput.x);
 		InteractHandle();
+
+		for (int i = 0; i < abilities.Count; i++)
+		{
+			(abilities[i] as IAbility).AbilityUpdate();
+		}
 	}
 
-	private void SetAbility(int index)
+	public void TryEnableAbility(AbilityType type)
 	{
-		if (index < 0 || index >= abilities.Count) return;
+		abilitiesDictionary.TryGetValue(type, out IAbility abilityToEnable);
+		abilityToEnable?.Enable();
+	}
 
-		if (currentAbility != null) StopCoroutine(currentAbility.AbilityUpdate());
-
-		currentAbilityIndex = index;
-
-		currentAbility = abilities[currentAbilityIndex] as IAbility;
-
-		Debug.Log("Set ability " + index);
-
-		StartCoroutine(currentAbility.AbilityUpdate());
+	public void TryDisableAbility(AbilityType type)
+	{
+		abilitiesDictionary.TryGetValue(type, out IAbility abilityToEnable);
+		abilityToEnable?.Disable();
 	}
 
 	private void TurnHandle(float xInput)
@@ -205,6 +200,11 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void OnFixedTick()
 	{
 		controller.Move();
+
+		for (int i = 0; i < abilities.Count; i++)
+		{
+			(abilities[i] as IAbility).AbilityFixedUpdate();
+		}
 	}
 
 	private void AnimationUpdate()
@@ -216,47 +216,41 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		anim.SetFloat("Wall Sliding Input X", input.MoveInput.x * -controller.WallDirectionX);
 	}
 
-	private void SetSubscribe(bool state)
+	private void SubscribeInput()
 	{
-		if(state)
+		if (!subscribed)
 		{
-			if(!subscribed)
+			//Put all subs here
+
+			if (input && controller && anim)
 			{
-				//Put all subs here
+				Debug.Log("Subscribed");
+				input.Interact += TryIntercat;
+				input.JumpStart += controller.OnJumpInputDown;
+				input.JumpEnd += controller.OnJumpInputUp;
+				input.Dash += abilitiesDictionary[AbilityType.DASH].StopUse;
+				controller.OnJump += onJump;
 
-				if(input && controller && anim)
-				{
-					Debug.Log("Subscribed");
-					input.Interact += TryIntercat;
-					input.OnClickDown += startUse;
-					input.OnClickUp += stopUse;
-					input.JumpStart += controller.OnJumpInputDown;
-					input.JumpEnd += controller.OnJumpInputUp;
-					input.Dash += Dash;
-					controller.OnJump += onJump;
-
-					subscribed = true;
-				}
+				subscribed = true;
 			}
 		}
-		else
+	}
+
+	private void UnsubscribeInput()
+	{
+		if (subscribed)
 		{
-			if (subscribed)
+			//Put all unsubs here
+
+			if (input && controller && anim)
 			{
-				//Put all unsubs here
+				input.Interact -= TryIntercat;
+				input.JumpStart -= controller.OnJumpInputDown;
+				input.JumpEnd -= controller.OnJumpInputUp;
+				input.Dash -= abilitiesDictionary[AbilityType.DASH].StartUse;
+				controller.OnJump -= onJump;
 
-				if (input && controller && anim)
-				{
-					input.Interact -= TryIntercat;
-					input.OnClickDown -= startUse;
-					input.OnClickUp -= stopUse;
-					input.JumpStart -= controller.OnJumpInputDown;
-					input.JumpEnd -= controller.OnJumpInputUp;
-					input.Dash -= Dash;
-					controller.OnJump -= onJump;
-
-					subscribed = false;
-				}
+				subscribed = false;
 			}
 		}
 	}
@@ -265,14 +259,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	{
 		Process = true;
 
-		SetSubscribe(true);
+		SubscribeInput();
 	}
 
 	private void OnDisable()
 	{
 		Process = false;
 
-		SetSubscribe(false);
+		UnsubscribeInput();
 	}
 }
 
