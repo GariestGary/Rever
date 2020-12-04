@@ -7,5 +7,6 @@ public enum AbilityType
     NONE,
     DASH,
     DOUBLE_JUMP,
+    TRIPLE_JUMP,
     EXPLODE,
 }

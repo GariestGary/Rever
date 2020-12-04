@@ -231,6 +231,9 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 				input.JumpStart += abilitiesDictionary[AbilityType.DOUBLE_JUMP].StartUse;
 				input.JumpEnd += abilitiesDictionary[AbilityType.DOUBLE_JUMP].StopUse;
 
+				input.JumpStart += abilitiesDictionary[AbilityType.TRIPLE_JUMP].StartUse;
+				input.JumpEnd += abilitiesDictionary[AbilityType.TRIPLE_JUMP].StopUse;
+
 				input.Dash += abilitiesDictionary[AbilityType.DASH].StartUse;
 
 				controller.OnJump += onJump;
@@ -255,6 +258,9 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				input.JumpStart -= abilitiesDictionary[AbilityType.DOUBLE_JUMP].StartUse;
 				input.JumpEnd -= abilitiesDictionary[AbilityType.DOUBLE_JUMP].StopUse;
+
+				input.JumpStart -= abilitiesDictionary[AbilityType.TRIPLE_JUMP].StartUse;
+				input.JumpEnd -= abilitiesDictionary[AbilityType.TRIPLE_JUMP].StopUse;
 
 				input.Dash -= abilitiesDictionary[AbilityType.DASH].StartUse;
 

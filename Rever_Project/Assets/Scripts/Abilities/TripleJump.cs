@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Game/Abilities/Double Jump")]
-public class DoubleJump : ScriptableObject, IAbility
+[CreateAssetMenu(menuName = "Game/Abilities/Triple Jump")]
+public class TripleJump : ScriptableObject, IAbility
 {
 	private bool enabled;
 
@@ -11,10 +11,11 @@ public class DoubleJump : ScriptableObject, IAbility
 	private Controller2D controller;
 
 	private bool secondJumpPerformed = false;
+	private bool thirdJumpPerformed = false;
 
 	public bool Enabled => enabled;
 
-	public AbilityType Type => AbilityType.DOUBLE_JUMP;
+	public AbilityType Type => AbilityType.TRIPLE_JUMP;
 
 	public void AbilityAwake(Transform character, Animator anim)
 	{
@@ -24,14 +25,14 @@ public class DoubleJump : ScriptableObject, IAbility
 
 	public void AbilityFixedUpdate()
 	{
-		
+
 	}
 
 	public void AbilityUpdate()
 	{
-		if(secondJumpPerformed)
+		if (secondJumpPerformed && thirdJumpPerformed)
 		{
-			secondJumpPerformed = !controller.Collisions.below;
+			secondJumpPerformed = thirdJumpPerformed = !controller.Collisions.below;
 		}
 	}
 
@@ -39,10 +40,20 @@ public class DoubleJump : ScriptableObject, IAbility
 	{
 		if (!enabled) return;
 
-		if (!controller.Collisions.below && !(controller.Collisions.left || controller.Collisions.right) && !controller.WallSliding && !secondJumpPerformed)
+		if (!controller.Collisions.below && !(controller.Collisions.left || controller.Collisions.right) && !controller.WallSliding)
 		{
-			controller.ForceJump();
-			secondJumpPerformed = true;
+			if(!secondJumpPerformed)
+			{
+				secondJumpPerformed = true;
+				return;
+			}
+
+			if(!thirdJumpPerformed)
+			{
+				controller.ForceJump();
+				thirdJumpPerformed = true;
+			}
+			
 		}
 	}
 
@@ -50,7 +61,7 @@ public class DoubleJump : ScriptableObject, IAbility
 	{
 		if (!enabled) return;
 
-		if (secondJumpPerformed)
+		if (thirdJumpPerformed && secondJumpPerformed)
 		{
 			controller.OnJumpInputUp();
 		}
@@ -66,5 +77,4 @@ public class DoubleJump : ScriptableObject, IAbility
 	{
 		enabled = true;
 	}
-
 }
