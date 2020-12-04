@@ -34,14 +34,14 @@ public class SpawnObjectCommand : DefaultCommand
 			}
 		}
 
-		Item item = Toolbox.GetManager<ItemManager>().GetItemByName(args[1]);
+		//Item item = Toolbox.GetManager<ItemManager>().GetItemByName(args[1]);
 
-		if(!item)
-		{
-			return CommandProcessedMessage.Send(false, "Item with this name doesn't exist");
-		}
+		//if(!item)
+		//{
+		//	return CommandProcessedMessage.Send(false, "Item with this name doesn't exist");
+		//}
 
-		objToSpawn = Toolbox.GetManager<ObjectPoolManager>().TryGetObject(args[0], pos, Quaternion.Euler(rot), null, item);
+		objToSpawn = Toolbox.GetManager<ObjectPoolManager>().TryGetObject(args[0], pos, Quaternion.Euler(rot), null, null);
 
 		if (!objToSpawn)
 		{

@@ -40,7 +40,7 @@ public class PlayerStateUI : MonoBehaviour, IAwake
 			}
 		}).AddTo(Toolbox.Instance.Disposables);
 
-		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.ITEM_NOTIFY).Subscribe(x => ItemNotify(x.data as Item));
+		//msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.ITEM_TAKED).Subscribe(x => { Debug.Log(x.data.GetType()); ItemNotify(x.data as Item); });
 
 		notifierSequence = DOTween.Sequence();
 
@@ -58,12 +58,12 @@ public class PlayerStateUI : MonoBehaviour, IAwake
 		health.fillAmount = (float)hp.currentHitPoints / (float)hp.maxHitPoints;
 	}
 
-	private void ItemNotify(Item item)
-	{
-		notifierIcon.sprite = item.IconInInventory;
-		notifierText.text = item.name;
+	//private void ItemNotify(Item item)
+	//{
+	//	notifierIcon.sprite = item.IconInInventory;
+	//	notifierText.text = item.name;
 
-		notifierSequence.Restart();
-		//notifierSequence.Play();
-	}
+	//	notifierSequence.Restart();
+	//	//notifierSequence.Play();
+	//}
 }

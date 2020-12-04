@@ -13,8 +13,8 @@ public class ItemManager : ManagerBase, IExecute
 		
 	}
 
-	public Item GetItemByName(string name)
-	{
-		return items.Where(x => x is Item && (x as Item).ItemName == name).Cast<Item>().FirstOrDefault();
-	}
+	//public Item GetItemByName(string name)
+	//{
+	//	return items.Where(x => x is Item && (x as Item).ItemName == name).Cast<Item>().FirstOrDefault();
+	//}
 }

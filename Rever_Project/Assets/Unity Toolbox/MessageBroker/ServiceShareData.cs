@@ -8,5 +8,5 @@ public enum ServiceShareData
     DIALOG_CLOSED,
     UPDATE_UI,
     HIT_CHARACTER,
-    ITEM_NOTIFY
+    ITEM_TAKED,
 }

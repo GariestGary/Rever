@@ -31,6 +31,8 @@ public class GameManager : ManagerBase, IExecute
 	private LevelHandler currentLevelHandler;
 
 	private GameObject instantiatedPlayer;
+	private Player currentPlayer;
+	private Inventory currentInventory;
 
 	private string currentSceneName;
 	private bool changingScene = false;
@@ -38,6 +40,8 @@ public class GameManager : ManagerBase, IExecute
 	private bool previousSceneUnloaded;
 
 	public LevelHandler CurrentLevelHandler => currentLevelHandler;
+	public Player CurrentPlayer => currentPlayer;
+	public Inventory CurrentInventory => currentInventory;
 
 	[Inject]
 	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, DiContainer _container)
@@ -77,6 +81,8 @@ public class GameManager : ManagerBase, IExecute
 			if(instantiatedPlayer == null)
 			{
 				instantiatedPlayer = pool.Instantiate(playerPrefab, spawnPoint.transform.position, Quaternion.identity, true);
+				currentPlayer = instantiatedPlayer.GetComponent<Player>();
+				currentInventory = instantiatedPlayer.GetComponent<Inventory>();
 				cam.SetTarget(instantiatedPlayer.transform);
 			}
 			else

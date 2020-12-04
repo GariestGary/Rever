@@ -54,6 +54,7 @@ public class Dash : ScriptableObject, IAbility
 		characterController.SetGravity(0);
 		currentTime = timeForDash;
 		characterController.useInput = false;
+		FMODUnity.RuntimeManager.PlayOneShot("event:/Dash");
 	}
 
 	private void InDashUpdate(float d)

@@ -2,29 +2,34 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UniRx;
+using Zenject;
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, IAwake
 {
 	[SerializeField] private string itemTag;
-    private List<Item> items = new List<Item>();
+    //private List<Item> items = new List<Item>();
 
-    public void AddItem(Item item)
+	private MessageManager msg;
+
+	//public Item[] Items => items.ToArray();
+
+	[Inject]
+	public void Constructor(MessageManager msg)
 	{
-		if(items.Where(x => x.Type == item.Type).Count() > 0)
-		{
-			//Add to existing
-		}
-		else
-		{
-			items.Add(item);
-		}
+		this.msg = msg;
+	}
+	public void OnAwake()
+	{
+		//msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.ITEM_TAKED).Subscribe(x => AddItem(x.data as Item));
 	}
 
 	private void OnTriggerEnter2D(Collider2D collision)
 	{
 		if(collision.CompareTag(itemTag))
 		{
-			AddItem(collision.GetComponent<WorldItem>().Take());
+			
 		}
 	}
+
 }
