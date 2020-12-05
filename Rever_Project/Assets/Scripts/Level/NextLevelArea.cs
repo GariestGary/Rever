@@ -5,8 +5,11 @@ using Zenject;
 
 public class NextLevelArea : MonoBehaviour
 {
-    [SerializeField] private string nextLevelSceneName;
+	[SerializeField] private string spawnPointTag;
+    [SerializeField] private LevelChangeData nextLevelData;
 	[SerializeField] private string playerTag;
+
+	public string SpawnPointTag => spawnPointTag;
 
 	private GameManager game;
 
@@ -20,7 +23,15 @@ public class NextLevelArea : MonoBehaviour
 	{
 		if (collision.CompareTag(playerTag))
 		{
-			game.LoadLevel(nextLevelSceneName);
+			game.LoadLevel(nextLevelData);
 		}
 	}
+}
+
+[System.Serializable]
+public struct LevelChangeData
+{
+	public string nextLevelName;
+	public string nextSpawnPointTag;
+	public float direction;
 }

@@ -115,11 +115,8 @@ public class UpdateManager : ManagerBase, IExecute
 			{
 				(upd as IAwake).OnAwake();
 			}
-			else
-			{
-				Add(upd);
-			}
 
+			Add(upd);
 		}
 	}
 }

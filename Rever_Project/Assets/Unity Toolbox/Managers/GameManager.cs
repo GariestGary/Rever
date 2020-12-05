@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,15 +14,16 @@ using Cinemachine;
 public class GameManager : ManagerBase, IExecute
 {
 	[SerializeField] private string lookCameraTag;
-	[SerializeField] private string spawnPointTag;
 	[SerializeField] private string playerPrefabName;
-	[SerializeField] private string initLevelName;
+	[SerializeField] private LevelChangeData initLevelData;
 	[SerializeField] private string LevelsFolderPath;
+	[SerializeField] private float openedSceneDelay;
 
 	private ObjectPoolManager pool;
 	private ResourcesManager res;
 	private MessageManager msg;
 	private UpdateManager upd;
+	private InputManager input;
 	private DiContainer _container;
 
 	private LookCamera cam;
@@ -30,7 +32,7 @@ public class GameManager : ManagerBase, IExecute
 
 	private LevelHandler currentLevelHandler;
 
-	private GameObject instantiatedPlayer;
+	private GameObject instantiatedPlayerTransform;
 	private Player currentPlayer;
 	private Inventory currentInventory;
 
@@ -44,12 +46,13 @@ public class GameManager : ManagerBase, IExecute
 	public Inventory CurrentInventory => currentInventory;
 
 	[Inject]
-	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, DiContainer _container)
+	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, InputManager input, DiContainer _container)
 	{
 		this.pool = pool;
 		this.res = res;
 		this.msg = msg;
 		this.upd = upd;
+		this.input = input;
 		this._container = _container;
 	}
 
@@ -57,7 +60,7 @@ public class GameManager : ManagerBase, IExecute
 	{
 		currentSceneName = "";
 
-		LoadLevel(initLevelName);
+		LoadLevel(initLevelData);
 
 		cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
 		playerPrefab = res.GetResourceByName<GameObject>(playerPrefabName);
@@ -70,48 +73,62 @@ public class GameManager : ManagerBase, IExecute
 
 	public void ResetPlayer()
 	{
-		instantiatedPlayer.transform.position = spawnPoint.transform.position;
-		instantiatedPlayer.GetComponent<Player>().Respawn();
+		instantiatedPlayerTransform.transform.position = spawnPoint.transform.position;
+		currentPlayer.Respawn();
 	}
 
 	private void SpawnPlayer()
 	{
-		if(spawnPoint && playerPrefab && cam)
+		if(playerPrefab && cam)
 		{
-			if(instantiatedPlayer == null)
+			if(instantiatedPlayerTransform == null)
 			{
-				instantiatedPlayer = pool.Instantiate(playerPrefab, spawnPoint.transform.position, Quaternion.identity, true);
-				currentPlayer = instantiatedPlayer.GetComponent<Player>();
-				currentInventory = instantiatedPlayer.GetComponent<Inventory>();
-				cam.SetTarget(instantiatedPlayer.transform);
+				instantiatedPlayerTransform = pool.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, true);
+				currentPlayer = instantiatedPlayerTransform.GetComponent<Player>();
+				currentInventory = instantiatedPlayerTransform.GetComponent<Inventory>();
+				cam.SetTarget(instantiatedPlayerTransform.transform);
 			}
-			else
-			{
-				instantiatedPlayer.transform.position = spawnPoint.transform.position;
-			}
-
-			Debug.Log("Spawned player");
 		}
 	}
 
-	private void TryOpenScene()
+	private void TryOpenScene(LevelChangeData data)
 	{
 		if (!nextSceneLoaded || !previousSceneUnloaded) return;
 
 		AddUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 
-		spawnPoint = GameObject.FindGameObjectWithTag(spawnPointTag);
+		if(!instantiatedPlayerTransform) SpawnPlayer();
 
-		SpawnPlayer();
+		currentLevelHandler.SetupLevel(instantiatedPlayerTransform.transform, data.nextSpawnPointTag);
 
+		Toolbox.Instance.StartCoroutine(SceneOpenedDelay(data.direction));
 		//TODO: 
 	}
 
-	public void LoadLevel(string name)
+	private IEnumerator SceneOpenedDelay(float direction)
 	{
-		if (!Application.CanStreamedLevelBeLoaded(LevelsFolderPath + "/" + name))
+		Debug.Log("Coroutine Started");
+		float currentTime = 0;
+		input.TrySetDefaultInputActive(false, true);
+
+		input.SetMovementInput(new Vector2(direction, 0));
+
+		while (currentTime < openedSceneDelay)
 		{
-			Debug.LogWarning("Scene with name '" + name + "' doesn't exist");
+			currentTime += Time.deltaTime;
+			yield return null;
+		}
+
+		input.SetMovementInput(Vector2.zero);
+		input.TrySetDefaultInputActive(true, true);
+		msg.Send(ServiceShareData.SCENE_READY);
+	}
+
+	public void LoadLevel(LevelChangeData data)
+	{
+		if (!Application.CanStreamedLevelBeLoaded(LevelsFolderPath + "/" + data.nextLevelName))
+		{
+			Debug.LogWarning("Scene with name '" + data.nextLevelName + "' doesn't exist");
 			return;
 		}
 
@@ -127,13 +144,13 @@ public class GameManager : ManagerBase, IExecute
 			FindObjectsOfType<MonoBehaviour>().Where(x => x is ISceneChange).ToList().ForEach(x => (x as ISceneChange).OnSceneChange());
 			RemoveUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 			AsyncOperation unloadingLevel = SceneManager.UnloadSceneAsync(currentSceneName);
-			unloadingLevel.completed += _ => { previousSceneUnloaded = true; TryOpenScene(); };
+			unloadingLevel.completed += _ => { previousSceneUnloaded = true; TryOpenScene(data); };
 		}
 
 		
-		AsyncOperation loadingLevel = SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+		AsyncOperation loadingLevel = SceneManager.LoadSceneAsync(data.nextLevelName, LoadSceneMode.Additive);
 		
-		loadingLevel.completed += _ => { nextSceneLoaded = true; currentSceneName = name; TryOpenScene(); };
+		loadingLevel.completed += _ => { nextSceneLoaded = true; currentSceneName = data.nextLevelName; TryOpenScene(data); };
 		
 	}
 
@@ -167,3 +184,4 @@ public class GameManager : ManagerBase, IExecute
 		currentLevelHandler.Dispose();
 	}
 }
+

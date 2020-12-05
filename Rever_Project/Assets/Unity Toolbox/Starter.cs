@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UniRx;
 
 public class Starter : MonoBehaviour
 {
@@ -26,7 +27,7 @@ public class Starter : MonoBehaviour
 			Toolbox.AddManager(managers[i]);
 		}
 
-		Toolbox.GetManager<MessageManager>()?.Subscribe(ServiceShareData.SCENE_CHANGE, () => OnSceneChange());
+		Toolbox.GetManager<MessageManager>()?.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.SCENE_CHANGE).Subscribe(_ => OnSceneChange()).AddTo(Toolbox.Instance.Disposables);
 	}
 
 	public ManagerBase[] GetManagersInstances()

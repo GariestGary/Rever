@@ -19,7 +19,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private float interactRadius;
 	[Space]
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
-	public bool Process { get; private set; }
+	public bool Process => process;
 
 	private Controller2D controller;
 	private InputManager input;
@@ -31,6 +31,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Camera mainCam;
 	private IInteractable currentInteractable;
 	private HitPoints hp;
+	private bool process;
 
 	private bool subscribed = false;
 	private bool facingRight = true;
@@ -297,14 +298,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void OnEnable()
 	{
-		Process = true;
+		process = true;
 
 		SubscribeInput();
 	}
 
 	private void OnDisable()
 	{
-		Process = false;
+		process = false;
 
 		UnsubscribeInput();
 	}

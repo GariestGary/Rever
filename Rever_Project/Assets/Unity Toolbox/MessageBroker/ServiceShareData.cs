@@ -5,6 +5,7 @@ using UnityEngine;
 public enum ServiceShareData
 {
     SCENE_CHANGE,
+    SCENE_READY,
     DIALOG_CLOSED,
     UPDATE_UI,
     HIT_CHARACTER,

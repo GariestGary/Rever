@@ -8,8 +8,6 @@ using UnityEngine.InputSystem;
 [CreateAssetMenu(fileName = "Input", menuName = "Toolbox/Managers/Input Manager")]
 public class InputManager : ManagerBase, IExecute, ISceneChange
 {
-	[SerializeField] private bool externalInput = false;
-
 	//Create input actions assets named "Controls"
 	private Controls controls;
 
@@ -38,8 +36,6 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 	public void SetMovementInput(Vector2 input)
 	{
-		if (!externalInput) return;
-
 		MoveInput = input;
 	}
 
@@ -67,8 +63,6 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 
 		controls.Default.Movement.performed += ctx => 
 		{
-			if (externalInput) return;
-
 			MoveInput = ctx.ReadValue<Vector2>();
 		};
 

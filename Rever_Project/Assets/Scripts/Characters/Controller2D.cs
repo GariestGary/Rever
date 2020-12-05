@@ -9,7 +9,7 @@ public class Controller2D : RaycastController
 	[SerializeField] private float timeToJumpApex = .4f;
 	[SerializeField] private float fallMultiplier = .2f;
 	[Space]
-	[SerializeField] private bool canStickWall;
+	[SerializeField] private bool canJumpWall;
 	[SerializeField] private Vector2 wallJumpClimb;
 	[SerializeField] private Vector2 wallJumpOff;
 	[SerializeField] private Vector2 wallLeap;
@@ -27,7 +27,7 @@ public class Controller2D : RaycastController
 	public bool WallSliding => wallSliding;
 	public int WallDirectionX => wallDirX;
 	public float LastInputFacing => lastInputFacing;
-	public bool CanStickWall { get { return canStickWall; } set { canStickWall = value; } }
+	public bool CanJumpWall { get { return canJumpWall; } set { canJumpWall = value; } }
 	public CollisionInfo Collisions => collisions;
 
 	public event Action OnJump = delegate { };
@@ -67,7 +67,7 @@ public class Controller2D : RaycastController
 		collisions.faceDir = 1;
 		lastInputFacing = collisions.faceDir;
 
-		currentAbilityToStickWall = CanStickWall;
+		currentAbilityToStickWall = CanJumpWall;
 	}
 
 	public void HandleInput(Vector2 input)
@@ -374,7 +374,7 @@ public class Controller2D : RaycastController
 
 	public void OnJumpInputDown()
 	{
-		if (wallSliding && canStickWall)
+		if (wallSliding && canJumpWall)
 		{
 			if (wallDirX == directionalInput.x)
 			{

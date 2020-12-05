@@ -12,15 +12,15 @@ public class MessageManager : ManagerBase, IExecute
 
     public MessageBroker Broker;
 
-    public void Subscribe(ServiceShareData id, Action next, object sender = null, string tag = "")
-    {
-        var sub = Broker.Receive<MessageBase>().Where(
-            ctx =>
-            (ctx.id == id) &&
-            (ctx.sender == null || ctx.sender == sender) &&
-            (ctx.tag == "" || ctx.tag == tag)
-        ).Subscribe(_ => next.Invoke()).AddTo(Toolbox.GetManager<MessageManager>().subscriptions);
-    }
+    //public void Subscribe(ServiceShareData id, Action next, object sender = null, string tag = "")
+    //{
+    //    var sub = Broker.Receive<MessageBase>().Where(
+    //        ctx =>
+    //        (ctx.id == id) &&
+    //        (ctx.sender == null || ctx.sender == sender) &&
+    //        (ctx.tag == "" || ctx.tag == tag)
+    //    ).Subscribe(_ => next.Invoke()).AddTo(Toolbox.GetManager<MessageManager>().subscriptions);
+    //}
 
     public void Send(ServiceShareData id, object sender = null, object data = null, string tag = "")
     {
@@ -35,6 +35,6 @@ public class MessageManager : ManagerBase, IExecute
 	public void OnExecute()
 	{
         Broker = new MessageBroker();
-        Subscribe(ServiceShareData.SCENE_CHANGE, ClearDisposables);
+        Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.SCENE_CHANGE).Subscribe(_ => ClearDisposables()).AddTo(Toolbox.Instance.Disposables);
     }
 }
