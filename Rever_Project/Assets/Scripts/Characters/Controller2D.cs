@@ -27,15 +27,16 @@ public class Controller2D : RaycastController
 	public bool WallSliding => wallSliding;
 	public int WallDirectionX => wallDirX;
 	public float LastInputFacing => lastInputFacing;
-	public bool CanStickWall => canStickWall;
+	public bool CanStickWall { get { return canStickWall; } set { canStickWall = value; } }
 	public CollisionInfo Collisions => collisions;
+
 	public event Action OnJump = delegate { };
 	
-	public bool currentAbilityToStickWall = true;
-	public bool useInput = true;
+	[HideInInspector] public bool currentAbilityToStickWall = true;
+	[HideInInspector] public bool useInput = true;
 
-	public bool UseHorizontalCollisions = true;
-	public bool UseVerticalCollisions = true;
+	[HideInInspector] public bool UseHorizontalCollisions = true;
+	[HideInInspector] public bool UseVerticalCollisions = true;
 
 	private float gravity;
 	private float maxJumpVelocity;

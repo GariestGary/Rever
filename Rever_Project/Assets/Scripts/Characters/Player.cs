@@ -74,10 +74,10 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	public void TryIntercat()
 	{
-		if (currentInteractable != null)
+		if (currentInteractable != null && controller.Collisions.below)
 		{
-			currentInteractable.Interact();
 			input.TrySetDefaultInputActive(false, true);
+			currentInteractable.Interact(this);
 		}
 	}
 
@@ -101,7 +101,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			{
 				(a as IAbility).AbilityAwake(t, anim);
 				//TODO: Temp
-				(a as IAbility).Enable();
+				(a as IAbility).Disable();
 				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
 			}
 		});

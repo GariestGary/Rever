@@ -8,5 +8,6 @@ public enum AbilityType
     DASH,
     DOUBLE_JUMP,
     TRIPLE_JUMP,
+    WALL_SLIDE,
     EXPLODE,
 }

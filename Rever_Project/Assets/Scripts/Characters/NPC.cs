@@ -35,7 +35,7 @@ public class NPC : MonoBehaviour, IInteractable
 		hint.SetActive(false);
 	}
 
-	public void Interact()
+	public void Interact(Player player)
 	{
 		Debug.Log("Interacting with " + npcName);
 		dialog.SendFungusMessage(npcName);
