@@ -13,13 +13,13 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private Transform graphicsRoot;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
-	[SerializeField] private int initialHitPoints;
 	[Space]
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
 	[Space]
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
 	public bool Process => process;
+	public Health PlayerHealth => health;
 
 	private Controller2D controller;
 	private InputManager input;
@@ -29,14 +29,15 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Dictionary<AbilityType, IAbility> abilitiesDictionary = new Dictionary<AbilityType, IAbility>();
 	private Transform t;
 	private Camera mainCam;
+	private Health health;
 	private IInteractable currentInteractable;
-	private HitPoints hp;
 	private bool process;
 
 	private bool subscribed = false;
 	private bool facingRight = true;
 
 	private Action onJump;
+	private Action onHealthChange;
 
 	[Inject]
 	public void Constructor(InputManager input, GameManager game, MessageManager msg)
@@ -50,12 +51,10 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	{
 		InitializeFields();
 		InitializeAbilities();
-		InitializeSubscribes();
 		InitializeDelegates();
+		InitializeSubscribes();
 
-		hp = new HitPoints();
-		hp.SetMaxHitPoints(initialHitPoints);
-		hp.Reset();
+		health.Initialize();
 	}
 
 	private void InitializeSubscribes()
@@ -67,7 +66,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
 		{
-			Hit((int)x.data);
+			health.Hit((int)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SubscribeInput();
@@ -84,12 +83,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void InitializeDelegates()
 	{
+		onHealthChange = delegate { msg.Send(ServiceShareData.UPDATE_UI, this, health.HP, "health"); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
 	}
 
 	private void InitializeFields()
 	{
 		controller = GetComponent<Controller2D>();
+		health = GetComponent<Health>();
 		t = transform;
 		mainCam = Camera.main;
 	}
@@ -106,18 +107,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
 			}
 		});
-	}
-
-	public void Respawn()
-	{
-		hp.Reset();
-		msg.Send(ServiceShareData.UPDATE_UI, null, hp, "health");
-	}
-
-	public void Hit(int hitAmount)
-	{
-		hp.Hit(hitAmount);
-		msg.Send(ServiceShareData.UPDATE_UI, null, hp, "health");
 	}
 
 	public void OnTick() 
@@ -222,8 +211,10 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		{
 			//Put all subs here
 
-			if (input && controller && anim)
+			if (input && controller && anim && health)
 			{
+				health.OnHealthChange += onHealthChange;
+
 				input.Interact += TryIntercat;
 
 				input.JumpStart += controller.OnJumpInputDown;
@@ -250,8 +241,10 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		{
 			//Put all unsubs here
 
-			if (input && controller && anim)
+			if (input && controller && anim && health)
 			{
+				health.OnHealthChange -= onHealthChange;
+
 				input.Interact -= TryIntercat;
 
 				input.JumpStart -= controller.OnJumpInputDown;
@@ -308,37 +301,5 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		process = false;
 
 		UnsubscribeInput();
-	}
-}
-
-[System.Serializable]
-public struct HitPoints
-{
-	public int maxHitPoints { get; private set; }
-	public int currentHitPoints { get; private set; }
-
-	public void Hit(int amount)
-	{
-		currentHitPoints -= Mathf.Abs(amount);
-	}
-
-	public void SetMaxHitPoints(int amount)
-	{
-		maxHitPoints = Mathf.Abs(amount);
-	}
-
-	public void AddMaxHitPoints(int amount)
-	{
-		maxHitPoints += Mathf.Abs(amount);
-	}
-
-	public void Reset()
-	{
-		currentHitPoints = maxHitPoints;
-	}
-
-	public override string ToString()
-	{
-		return "current hp - " + currentHitPoints + ". max hp - " + maxHitPoints;
 	}
 }

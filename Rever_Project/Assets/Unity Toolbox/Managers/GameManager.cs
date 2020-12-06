@@ -74,7 +74,7 @@ public class GameManager : ManagerBase, IExecute
 	public void ResetPlayer()
 	{
 		instantiatedPlayerTransform.transform.position = spawnPoint.transform.position;
-		currentPlayer.Respawn();
+		currentPlayer.PlayerHealth.ResetHP();
 	}
 
 	private void SpawnPlayer()
@@ -107,7 +107,6 @@ public class GameManager : ManagerBase, IExecute
 
 	private IEnumerator SceneOpenedDelay(float direction)
 	{
-		Debug.Log("Coroutine Started");
 		float currentTime = 0;
 		input.TrySetDefaultInputActive(false, true);
 

@@ -139,6 +139,11 @@ public class Controller2D : RaycastController
 		}
 	}
 
+	public void SetMoveSpeed(float speed)
+	{
+		moveSpeed = speed;
+	}
+
 	public void AddForce(Vector3 amount)
 	{
 		velocity += amount;

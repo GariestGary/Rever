@@ -32,8 +32,6 @@ public class PlayerStateUI : MonoBehaviour, IAwake
 	{
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.UPDATE_UI).Subscribe(x => 
 		{
-			Debug.Log("Updating UI");
-
 			switch(x.tag)
 			{
 				case "health": UpdateHealth((HitPoints)x.data); return;
