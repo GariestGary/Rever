@@ -30,8 +30,9 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 
 	
 	public Health NoticedPlayerHealth => noticedPlayerHealth;
-	public bool needToChangeDirection => isOnEdge || isTouchingWall;
+	public bool NeedToChangeDirection => isOnEdge || isTouchingWall;
 	public bool Process => process;
+	public bool IsFacingRight => isFacingRight;
 
 	public void SetInput(Vector2 inputToSet)
 	{
@@ -104,12 +105,23 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 
 		if (xInput > 0 && !isFacingRight)
 		{
-			//TODO: make animation turn... or not...
-			enemyRoot.localEulerAngles = new Vector3(0, 0, 0);
-			isFacingRight = true;
+			Turn(true);
 		}
 
 		if (xInput < 0 && isFacingRight)
+		{
+			Turn(false);
+		}
+	}
+
+	public void Turn(bool right)
+	{
+		if(right)
+		{
+			enemyRoot.localEulerAngles = new Vector3(0, 0, 0);
+			isFacingRight = true;
+		}
+		else
 		{
 			enemyRoot.localEulerAngles = new Vector3(0, 180, 0);
 			isFacingRight = false;

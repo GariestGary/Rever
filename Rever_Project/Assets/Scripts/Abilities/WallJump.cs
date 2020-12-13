@@ -32,11 +32,13 @@ public class WallJump : ScriptableObject, IAbility
 	public void Disable()
 	{
 		controller.CanJumpWall = false;
+		enabled = false;
 	}
 
 	public void Enable()
 	{
 		controller.CanJumpWall = true;
+		enabled = true;
 	}
 
 	public void StartUse()

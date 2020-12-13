@@ -83,6 +83,9 @@ public class UpdateManager : ManagerBase, IExecute
 		}
 	}
 
+
+
+
 	public void OnExecute()
 	{
 		ticks.Clear();

@@ -9,13 +9,17 @@ public class Dash : ScriptableObject, IAbility
 {
 	[SerializeField] private float timeForDash;
 	[SerializeField] private float dashDistance;
+	[SerializeField] private float jumpBeforeDashAmount;
 	public AbilityType Type => AbilityType.DASH;
 
 	public bool Enabled => enabled;
 
 	private Controller2D characterController;
+	private Player player;
+	private Transform playerTransform;
 	private float dashForce;
 	private float currentTime;
+	private int dashDirection;
 	private bool enabled;
 
 	private StateMachine<DashState> fsm;
@@ -30,6 +34,8 @@ public class Dash : ScriptableObject, IAbility
 	{
 		dashForce = dashDistance / timeForDash;
 		characterController = character.GetComponent<Controller2D>();
+		player = character.GetComponent<Player>();
+		playerTransform = character;
 
 		StateMachineAwake();
 	}
@@ -59,9 +65,21 @@ public class Dash : ScriptableObject, IAbility
 	{
 		characterController.UseVerticalCollisions = false;
 		characterController.SetGravity(0);
+		playerTransform.Translate(new Vector3(0, jumpBeforeDashAmount, 0));
 		currentTime = timeForDash;
 		characterController.useInput = false;
 		FMODUnity.RuntimeManager.PlayOneShot("event:/Dash");
+
+		if(characterController.WallSliding)
+		{
+			dashDirection = -characterController.WallDirectionX;
+			player.IsUpdatingTurn = false;
+			player.Turn(!(characterController.WallDirectionX > 0));
+		}
+		else
+		{
+			dashDirection = (int)characterController.LastInputFacing.x;
+		}
 	}
 
 	private void InDashUpdate(float d)
@@ -69,7 +87,7 @@ public class Dash : ScriptableObject, IAbility
 		if (currentTime > 0)
 		{
 			currentTime -= d;
-			characterController.SetForce(new Vector3(dashForce * characterController.LastInputFacing, 0, 0));
+			characterController.SetForce(new Vector3(dashForce * dashDirection, 0, 0));
 		}
 		else
 		{
@@ -82,6 +100,7 @@ public class Dash : ScriptableObject, IAbility
 		characterController.UseVerticalCollisions = true;
 		characterController.ResetGravity();
 		characterController.useInput = true;
+		player.IsUpdatingTurn = true;
 	}
 
 	public void StartUse()

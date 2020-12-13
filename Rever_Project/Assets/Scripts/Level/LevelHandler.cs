@@ -7,7 +7,7 @@ using Zenject;
 
 public class LevelHandler : Singleton<LevelHandler>
 {
-    [SerializeField] private List<LevelEntry> entries = new List<LevelEntry>();
+    private List<LevelEntry> entries = new List<LevelEntry>();
 
 	private MessageManager msg;
 
@@ -23,6 +23,17 @@ public class LevelHandler : Singleton<LevelHandler>
 	public void Constructor(MessageManager msg)
 	{
 		this.msg = msg;
+	}
+
+	public void AddEntry(GameObject entry, Transform entryPosition)
+	{
+		LevelEntry entryToAdd;
+
+		entryToAdd.area = entry.GetComponent<NextLevelArea>();
+		entryToAdd.collider = entry.GetComponent<Collider2D>();
+		entryToAdd.entryPosition = entryPosition;
+
+		entries.Add(entryToAdd);
 	}
 
     public void SetupLevel(Transform player, string entryTag)

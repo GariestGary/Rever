@@ -20,19 +20,19 @@ public class RaycastController : MonoBehaviour, IAwake
 	public float verticalRaySpacing;
 
 	[HideInInspector]
-	public BoxCollider2D collider;
+	public BoxCollider2D raycastCollider;
 	public RaycastOrigins raycastOrigins;
 
 	public virtual void OnAwake() 
 	{
-		collider = GetComponent<BoxCollider2D> ();
+		raycastCollider = GetComponent<BoxCollider2D> ();
 
 		CalculateRaySpacing();
 	}
 
 	public void UpdateRaycastOrigins() 
 	{
-		Bounds bounds = collider.bounds;
+		Bounds bounds = raycastCollider.bounds;
 		bounds.Expand (skinWidth * -2);
 		
 		raycastOrigins.bottomLeft = new Vector2 (bounds.min.x, bounds.min.y);
@@ -43,7 +43,7 @@ public class RaycastController : MonoBehaviour, IAwake
 	
 	public void CalculateRaySpacing() 
 	{
-		Bounds bounds = collider.bounds;
+		Bounds bounds = raycastCollider.bounds;
 		bounds.Expand (skinWidth * -2);
 
 		float boundsWidth = bounds.size.x;

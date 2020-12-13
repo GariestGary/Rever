@@ -26,25 +26,23 @@ public class Controller2D : RaycastController
 	public Vector3 Velocity => velocity;
 	public bool WallSliding => wallSliding;
 	public int WallDirectionX => wallDirX;
-	public float LastInputFacing => lastInputFacing;
+	public Vector2 LastInputFacing => lastInputFacing;
 	public bool CanJumpWall { get { return canJumpWall; } set { canJumpWall = value; } }
 	public CollisionInfo Collisions => collisions;
 
 	public event Action OnJump = delegate { };
 	
-	[HideInInspector] public bool currentAbilityToStickWall = true;
-	[HideInInspector] public bool useInput = true;
+	public bool useInput { get; set; } = true;
+	public bool UseHorizontalCollisions { get; set; } = true;
+	public bool UseVerticalCollisions { get; set; } = true;
 
-	[HideInInspector] public bool UseHorizontalCollisions = true;
-	[HideInInspector] public bool UseVerticalCollisions = true;
-
+	private Vector3 velocity;
+	private Vector2 lastInputFacing;
 	private float gravity;
 	private float maxJumpVelocity;
 	private float minJumpVelocity;
-	private Vector3 velocity;
 	private float velocityXSmoothing;
 	private float timeToWallUnstick;
-	private float lastInputFacing;
 
 	private bool wallSliding;
 	private int wallDirX;
@@ -65,9 +63,13 @@ public class Controller2D : RaycastController
 		CalculateJumpVelocities();
 
 		collisions.faceDir = 1;
-		lastInputFacing = collisions.faceDir;
+		lastInputFacing.x = collisions.faceDir;
+	}
 
-		currentAbilityToStickWall = CanJumpWall;
+	public void ChangeFacingDirection(int direction)
+	{
+		collisions.faceDir = direction;
+		lastInputFacing.x = direction;
 	}
 
 	public void HandleInput(Vector2 input)
@@ -76,7 +78,7 @@ public class Controller2D : RaycastController
 		{
 			if(input != Vector2.zero)
 			{
-				lastInputFacing = input.x;
+				lastInputFacing = input;
 			}
 
 			directionalInput = input;
@@ -434,7 +436,7 @@ public class Controller2D : RaycastController
 
 	private void HandleWallSliding()
 	{
-		if (!currentAbilityToStickWall) return;
+		if (!canJumpWall) return;
 
 		wallDirX = (collisions.left) ? -1 : 1;
 		wallSliding = false;

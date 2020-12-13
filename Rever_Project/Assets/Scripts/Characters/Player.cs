@@ -17,9 +17,12 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
 	[Space]
+	[SerializeField] private bool enableAbilitiesAtStart;
+	[Space]
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
-	public bool Process => process;
-	public Health PlayerHealth => health;
+	public Health PlayerHealth { get; private set; }
+	public bool IsUpdatingTurn { get; set; }
+	public bool Process { get; private set; }
 
 	private Controller2D controller;
 	private InputManager input;
@@ -28,16 +31,15 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private Dictionary<AbilityType, IAbility> abilitiesDictionary = new Dictionary<AbilityType, IAbility>();
 	private Transform t;
-	private Camera mainCam;
-	private Health health;
 	private IInteractable currentInteractable;
-	private bool process;
 
 	private bool subscribed = false;
 	private bool facingRight = true;
 
 	private Action onJump;
 	private Action onHealthChange;
+
+	public event Action OnAttackPressed;
 
 	[Inject]
 	public void Constructor(InputManager input, GameManager game, MessageManager msg)
@@ -54,7 +56,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		InitializeDelegates();
 		InitializeSubscribes();
 
-		health.Initialize();
+		PlayerHealth.Initialize();
 	}
 
 	private void InitializeSubscribes()
@@ -66,7 +68,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
 		{
-			health.Hit((int)x.data);
+			PlayerHealth.Hit((int)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SubscribeInput();
@@ -83,16 +85,16 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void InitializeDelegates()
 	{
-		onHealthChange = delegate { msg.Send(ServiceShareData.UPDATE_UI, this, health.HP, "health"); };
+		onHealthChange = delegate { msg.Send(ServiceShareData.UPDATE_UI, this, PlayerHealth.HP, "health"); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
 	}
 
 	private void InitializeFields()
 	{
 		controller = GetComponent<Controller2D>();
-		health = GetComponent<Health>();
+		PlayerHealth = GetComponent<Health>();
 		t = transform;
-		mainCam = Camera.main;
+		IsUpdatingTurn = true;
 	}
 
 	private void InitializeAbilities()
@@ -102,8 +104,16 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			if (a is IAbility)
 			{
 				(a as IAbility).AbilityAwake(t, anim);
-				//TODO: Temp
-				(a as IAbility).Disable();
+
+				if (enableAbilitiesAtStart)
+				{
+					(a as IAbility).Enable();
+				}
+				else
+				{
+					(a as IAbility).Disable();
+				}
+
 				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
 			}
 		});
@@ -137,20 +147,24 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void TurnHandle(float xInput)
 	{
-		if (xInput == 0) return;
+		if (xInput == 0 || !IsUpdatingTurn) return;
 
 		if (xInput > 0 && !facingRight)
 		{
-			//TODO: make animation turn... or not...
-			graphicsRoot.localEulerAngles = new Vector3(0, 0, 0);
-			facingRight = true;
+			Turn(true);
 		}
 
 		if (xInput < 0 && facingRight)
 		{
-			graphicsRoot.localEulerAngles = new Vector3(0, 180, 0);
-			facingRight = false;
+			Turn(false);
 		}
+	}
+
+	public void Turn(bool right)
+	{
+		graphicsRoot.localEulerAngles = new Vector3(0, right ? 0 : 180, 0);
+		facingRight = right;
+		controller.ChangeFacingDirection(right ? 1 : -1);
 	}
 
 	private void InteractHandle()
@@ -211,9 +225,9 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		{
 			//Put all subs here
 
-			if (input && controller && anim && health)
+			if (input && controller && anim && PlayerHealth)
 			{
-				health.OnHealthChange += onHealthChange;
+				PlayerHealth.OnHealthChange += onHealthChange;
 
 				input.Interact += TryIntercat;
 
@@ -228,6 +242,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				input.Dash += abilitiesDictionary[AbilityType.DASH].StartUse;
 
+				input.Attack += () => OnAttackPressed?.Invoke();
+
 				controller.OnJump += onJump;
 
 				subscribed = true;
@@ -241,9 +257,9 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		{
 			//Put all unsubs here
 
-			if (input && controller && anim && health)
+			if (input && controller && anim && PlayerHealth)
 			{
-				health.OnHealthChange -= onHealthChange;
+				PlayerHealth.OnHealthChange -= onHealthChange;
 
 				input.Interact -= TryIntercat;
 
@@ -257,6 +273,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 				input.JumpEnd -= abilitiesDictionary[AbilityType.TRIPLE_JUMP].StopUse;
 
 				input.Dash -= abilitiesDictionary[AbilityType.DASH].StartUse;
+
+				input.Attack -= () => OnAttackPressed?.Invoke();
 
 				controller.OnJump -= onJump;
 
@@ -291,14 +309,14 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	private void OnEnable()
 	{
-		process = true;
+		Process = true;
 
 		SubscribeInput();
 	}
 
 	private void OnDisable()
 	{
-		process = false;
+		Process = false;
 
 		UnsubscribeInput();
 	}

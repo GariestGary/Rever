@@ -22,6 +22,7 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 	public event Action JumpEnd;
 
 	public event Action Dash;
+	public event Action Attack;
 
 	public event Action Interact;
 
@@ -84,6 +85,8 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		controls.Default.Interact.performed += _ => Interact?.Invoke();
 
 		controls.Default.Dash.performed += _ => Dash?.Invoke();
+
+		controls.Default.Attack.performed += _ => Attack?.Invoke();
 
 		controls.Enable();
 	}

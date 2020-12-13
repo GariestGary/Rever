@@ -36,6 +36,7 @@ public class GameManager : ManagerBase, IExecute
 	private Player currentPlayer;
 	private Inventory currentInventory;
 
+	private Scene mainScene;
 	private string currentSceneName;
 	private bool changingScene = false;
 	private bool nextSceneLoaded;
@@ -44,6 +45,7 @@ public class GameManager : ManagerBase, IExecute
 	public LevelHandler CurrentLevelHandler => currentLevelHandler;
 	public Player CurrentPlayer => currentPlayer;
 	public Inventory CurrentInventory => currentInventory;
+	public Scene MainScene => mainScene;
 
 	[Inject]
 	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, InputManager input, DiContainer _container)
@@ -58,6 +60,8 @@ public class GameManager : ManagerBase, IExecute
 
 	public void OnExecute()
 	{
+		mainScene = SceneManager.GetActiveScene();
+
 		currentSceneName = "";
 
 		LoadLevel(initLevelData);
@@ -95,9 +99,9 @@ public class GameManager : ManagerBase, IExecute
 	{
 		if (!nextSceneLoaded || !previousSceneUnloaded) return;
 
-		AddUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
-
 		if(!instantiatedPlayerTransform) SpawnPlayer();
+
+		AddUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 
 		currentLevelHandler.SetupLevel(instantiatedPlayerTransform.transform, data.nextSpawnPointTag);
 
@@ -155,6 +159,8 @@ public class GameManager : ManagerBase, IExecute
 
 	private void AddUpdatesFromScene(Scene scene)
 	{
+		currentLevelHandler = LevelHandler.Instance;
+
 		scene.GetRootGameObjects().ToList().ForEach(x =>
 		{
 			_container.InjectGameObject(x);
@@ -163,11 +169,6 @@ public class GameManager : ManagerBase, IExecute
 			x.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Add(tick));
 			x.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Add(tick));
 			x.GetComponentsInChildren<IAwake>().ToList().ForEach(a => a.OnAwake());
-
-			if(x.TryGetComponent(out LevelHandler lvlHandler))
-			{
-				currentLevelHandler = lvlHandler;
-			}
 		});
 	}
 
