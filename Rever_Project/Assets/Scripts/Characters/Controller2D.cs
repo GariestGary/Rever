@@ -89,12 +89,72 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	public void Move()
+	#region move_local
+	//public void Move(Vector2 amount, bool standingOnPlatform)
+	//{
+	//	MoveUpdate(amount * Time.fixedDeltaTime, standingOnPlatform);
+	//}
+
+	//public void Move()
+	//{
+	//	CalculateVelocity();
+	//	HandleWallSliding();
+
+	//	MoveUpdate(velocity * Time.fixedDeltaTime);
+
+	//	if (collisions.above || collisions.below)
+	//	{
+	//		if (collisions.slidingDownMaxSlope)
+	//		{
+	//			velocity.y += collisions.slopeNormal.y * -gravity * Time.fixedDeltaTime;
+	//		}
+	//		else
+	//		{
+	//			velocity.y = 0;
+	//		}
+	//	}
+	//}
+
+	//private void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform = false)
+	//{
+	//	UpdateRaycastOrigins();
+
+	//	collisions.Reset();
+	//	collisions.moveAmountOld = moveAmount;
+
+	//	if (moveAmount.y < 0)
+	//	{
+	//		DescendSlope(ref moveAmount);
+	//	}
+
+	//	if (moveAmount.x != 0)
+	//	{
+	//		collisions.faceDir = (int)Mathf.Sign(moveAmount.x);
+	//	}
+
+	//	HorizontalCollisions(ref moveAmount);
+
+	//	if (moveAmount.y != 0)
+	//	{
+	//		VerticalCollisions(ref moveAmount);
+	//	}
+
+	//	t.Translate(moveAmount);
+
+	//	if (standingOnPlatform)
+	//	{
+	//		collisions.below = true;
+	//	}
+	//}
+	#endregion
+
+	#region move_from_tut
+	public void FixedUpdating()
 	{
 		CalculateVelocity();
 		HandleWallSliding();
 
-		MoveUpdate(velocity * Time.fixedDeltaTime);
+		Move(velocity * Time.fixedDeltaTime);
 
 		if (collisions.above || collisions.below)
 		{
@@ -107,9 +167,10 @@ public class Controller2D : RaycastController
 				velocity.y = 0;
 			}
 		}
+
 	}
 
-	private void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform = false)
+	public void Move(Vector2 moveAmount, bool standingOnPlatform = false)
 	{
 		UpdateRaycastOrigins();
 
@@ -127,8 +188,7 @@ public class Controller2D : RaycastController
 		}
 
 		HorizontalCollisions(ref moveAmount);
-
-		if(moveAmount.y != 0)
+		if (moveAmount.y != 0)
 		{
 			VerticalCollisions(ref moveAmount);
 		}
@@ -140,6 +200,7 @@ public class Controller2D : RaycastController
 			collisions.below = true;
 		}
 	}
+	#endregion
 
 	public void SetMoveSpeed(float speed)
 	{
@@ -190,8 +251,6 @@ public class Controller2D : RaycastController
 			rayOrigin += Vector2.up * (horizontalRaySpacing * i);
 			RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionMask);
 
-			Debug.DrawRay(rayOrigin, Vector2.right * directionX,Color.red);
-
 			if (hit) 
 			{
 
@@ -233,6 +292,8 @@ public class Controller2D : RaycastController
 					collisions.right = directionX == 1;
 				}
 			}
+
+			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
 		}
 	}
 
@@ -248,8 +309,6 @@ public class Controller2D : RaycastController
 			Vector2 rayOrigin = (directionY == -1)?raycastOrigins.bottomLeft:raycastOrigins.topLeft;
 			rayOrigin += Vector2.right * (verticalRaySpacing * i + moveAmount.x);
 			RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionMask);
-
-			Debug.DrawRay(rayOrigin, Vector2.up * directionY,Color.red);
 
 			if (hit) 
 			{
@@ -282,21 +341,22 @@ public class Controller2D : RaycastController
 				collisions.below = directionY == -1;
 				collisions.above = directionY == 1;
 			}
+
+			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
 		}
 
-		if (collisions.climbingSlope) 
+		if (collisions.climbingSlope)
 		{
-			float directionX = Mathf.Sign(moveAmount.x);
 			rayLength = Mathf.Abs(moveAmount.x) + skinWidth;
-			Vector2 rayOrigin = ((directionX == -1)?raycastOrigins.bottomLeft:raycastOrigins.bottomRight) + Vector2.up * moveAmount.y;
-			RaycastHit2D hit = Physics2D.Raycast(rayOrigin,Vector2.right * directionX,rayLength,collisionMask);
+			Vector2 rayOrigin = ((collisions.faceDir == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight) + Vector2.up * moveAmount.y;
+			RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * collisions.faceDir, rayLength, collisionMask);
 
-			if (hit) 
+			if (hit)
 			{
-				float slopeAngle = Vector2.Angle(hit.normal,Vector2.up);
-				if (slopeAngle != collisions.slopeAngle) 
+				float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+				if (slopeAngle != collisions.slopeAngle)
 				{
-					moveAmount.x = (hit.distance - skinWidth) * directionX;
+					moveAmount.x = (hit.distance - skinWidth) * collisions.faceDir;
 					collisions.slopeAngle = slopeAngle;
 					collisions.slopeNormal = hit.normal;
 				}

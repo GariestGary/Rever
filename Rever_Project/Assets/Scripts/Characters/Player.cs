@@ -122,7 +122,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	public void OnTick() 
 	{
 		controller.HandleInput(input.MoveInput);
-
+		
 		AnimationUpdate();
 		TurnHandle(input.MoveInput.x);
 		InteractHandle();
@@ -202,7 +202,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 	public void OnFixedTick()
 	{
-		controller.Move();
+		controller.FixedUpdating();
 
 		for (int i = 0; i < abilities.Count; i++)
 		{

@@ -30,6 +30,12 @@ public class Starter : MonoBehaviour
 		Toolbox.GetManager<MessageManager>()?.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.SCENE_CHANGE).Subscribe(_ => OnSceneChange()).AddTo(Toolbox.Instance.Disposables);
 	}
 
+	[ContextMenu("Apply Framerate")]
+	public void ApplyFramerate()
+	{
+		Application.targetFrameRate = targetFrameRate;
+	}
+
 	public ManagerBase[] GetManagersInstances()
 	{
 		return managers.ToArray();

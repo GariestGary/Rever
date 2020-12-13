@@ -23,7 +23,6 @@ public class NextLevelArea : MonoBehaviour, IAwake
 
 	public void OnAwake()
 	{
-		Debug.Log("awoken " + spawnPointTag);
 		entryArea = GetComponent<Collider2D>();
 
 		LevelHandler.Instance.AddEntry(gameObject, entryPoint);

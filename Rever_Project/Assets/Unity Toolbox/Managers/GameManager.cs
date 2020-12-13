@@ -42,6 +42,7 @@ public class GameManager : ManagerBase, IExecute
 	private bool nextSceneLoaded;
 	private bool previousSceneUnloaded;
 
+	public Transform CameraTransform => cam.transform;
 	public LevelHandler CurrentLevelHandler => currentLevelHandler;
 	public Player CurrentPlayer => currentPlayer;
 	public Inventory CurrentInventory => currentInventory;

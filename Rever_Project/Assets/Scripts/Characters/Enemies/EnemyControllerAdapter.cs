@@ -96,7 +96,7 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 
 	public void OnFixedTick()
 	{
-		controller.Move();
+		//controller.FixedUpdating();
 	}
 
 	private void TurnHandle(float xInput)
