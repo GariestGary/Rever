@@ -39,8 +39,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private Action onJump;
 	private Action onHealthChange;
 
-	public event Action OnAttackPressed;
-
 	[Inject]
 	public void Constructor(InputManager input, GameManager game, MessageManager msg)
 	{
@@ -242,7 +240,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				input.Dash += abilitiesDictionary[AbilityType.DASH].StartUse;
 
-				input.Attack += () => OnAttackPressed?.Invoke();
+				input.Attack += abilitiesDictionary[AbilityType.SLASH].StartUse;
 
 				controller.OnJump += onJump;
 
@@ -274,7 +272,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 
 				input.Dash -= abilitiesDictionary[AbilityType.DASH].StartUse;
 
-				input.Attack -= () => OnAttackPressed?.Invoke();
+				input.Attack -= abilitiesDictionary[AbilityType.SLASH].StartUse;
 
 				controller.OnJump -= onJump;
 

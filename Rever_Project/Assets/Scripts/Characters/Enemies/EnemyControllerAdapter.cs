@@ -13,6 +13,7 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 	[SerializeField] private Transform enemyRoot;
 	[SerializeField] private string playerTag;
 
+	private Health health;
 	private Transform t;
 	private Controller2D controller;
 	private Health noticedPlayerHealth;
@@ -71,7 +72,10 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 		isFacingRight = true;
 		isViewBlocked = true;
 		t = transform;
+		health = GetComponent<Health>();
 		controller = GetComponent<Controller2D>();
+
+		health.Initialize();
 	}
 
 	public void SetCheckRadius(float radius)
@@ -96,7 +100,7 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 
 	public void OnFixedTick()
 	{
-		//controller.FixedUpdating();
+		controller.FixedUpdating();
 	}
 
 	private void TurnHandle(float xInput)
@@ -205,7 +209,7 @@ public class EnemyControllerAdapter : MonoBehaviour, IEnemy, IPooledObject, IAwa
 
 	private void ChangeDirectionCheck()
 	{
-		isOnEdge = !Physics2D.Raycast(pointForEdgeCheck.position, Vector2.down, 1, groundLayer);
+		isOnEdge = !Physics2D.Raycast(pointForEdgeCheck.position, Vector2.down, 0.1f, groundLayer);
 
 		isTouchingWall = false;
 

@@ -15,7 +15,6 @@ public class Dash : DefaultAbility
 	private float dashForce;
 	private float currentTime;
 	private int dashDirection;
-	private bool enabled;
 
 	private StateMachine<DashState> fsm;
 
