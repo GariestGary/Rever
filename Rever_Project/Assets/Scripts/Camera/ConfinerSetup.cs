@@ -1,20 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Zenject;
 
 public class ConfinerSetup : MonoBehaviour, IAwake
 {
-	private GameManager game;
-
-	[Inject]
-	public void Constructor(GameManager game)
-	{
-		this.game = game;
-	}
+	[SerializeField] private bool setConfiner;
 
 	public void OnAwake()
 	{
-		game.SetCameraConfiner(GetComponent<PolygonCollider2D>());
+		if (setConfiner)
+			Toolbox.GetManager<GameManager>().SetCameraConfiner(GetComponent<PolygonCollider2D>());
 	}
 }

@@ -65,10 +65,10 @@ public class GameManager : ManagerBase, IExecute
 
 		currentSceneName = "";
 
-		LoadLevel(initLevelData);
-
 		cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
 		playerPrefab = res.GetResourceByName<GameObject>(playerPrefabName);
+
+		LoadLevel(initLevelData);
 	}
 
 	public void SetCameraConfiner(Collider2D bounds)

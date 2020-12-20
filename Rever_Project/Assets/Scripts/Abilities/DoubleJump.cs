@@ -3,68 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Game/Abilities/Double Jump")]
-public class DoubleJump : ScriptableObject, IAbility
+public class DoubleJump : DefaultAbility
 {
-	private bool enabled;
-
-	private Player player;
-	private Controller2D controller;
-
 	private bool secondJumpPerformed = false;
 
-	public bool Enabled => enabled;
+	public override AbilityType Type => AbilityType.DOUBLE_JUMP;
 
-	public AbilityType Type => AbilityType.DOUBLE_JUMP;
-
-	public void AbilityAwake(Transform character, Animator anim)
-	{
-		controller = character.GetComponent<Controller2D>();
-		player = character.GetComponent<Player>();
-	}
-
-	public void AbilityFixedUpdate()
-	{
-		
-	}
-
-	public void AbilityUpdate()
+	public override void AbilityUpdate()
 	{
 		if(secondJumpPerformed)
 		{
-			secondJumpPerformed = !controller.Collisions.below;
+			secondJumpPerformed = !playerController.Collisions.below;
 		}
 	}
 
-	public void StartUse()
+	public override void StartUse()
 	{
 		if (!enabled) return;
 
-		if (!controller.Collisions.below && !(controller.Collisions.left || controller.Collisions.right) && !controller.WallSliding && !secondJumpPerformed)
+		if (!playerController.Collisions.below && !(playerController.Collisions.left || playerController.Collisions.right) && !playerController.WallSliding && !secondJumpPerformed)
 		{
-			controller.ForceJump();
+			playerController.ForceJump();
 			secondJumpPerformed = true;
 		}
 	}
 
-	public void StopUse()
+	public override void StopUse()
 	{
 		if (!enabled) return;
 
 		if (secondJumpPerformed)
 		{
-			controller.OnJumpInputUp();
+			playerController.OnJumpInputUp();
 		}
 
 	}
-
-	public void Disable()
-	{
-		enabled = false;
-	}
-
-	public void Enable()
-	{
-		enabled = true;
-	}
-
 }

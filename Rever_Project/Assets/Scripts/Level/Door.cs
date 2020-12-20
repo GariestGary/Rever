@@ -2,17 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Door : MonoBehaviour
+public class Door : MonoBehaviour, IAwake
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+	[SerializeField] private GameObject doorCollider;
+    [SerializeField] private SwitcherWrapper switcher;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	public void OnAwake()
+	{
+		switcher.Enabled += OpenDoor;
+	}
+
+	public void OpenDoor()
+	{
+		doorCollider.SetActive(false);
+	}
+
+	private void OnDisable()
+	{
+		switcher.Enabled -= OpenDoor;
+	}
 }

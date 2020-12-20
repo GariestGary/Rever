@@ -3,44 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Game/Abilities/Triple Jump")]
-public class TripleJump : ScriptableObject, IAbility
+public class TripleJump : DefaultAbility
 {
-	private bool enabled;
-
-	private Player player;
-	private Controller2D controller;
-
 	private bool secondJumpPerformed = false;
 	private bool thirdJumpPerformed = false;
 
-	public bool Enabled => enabled;
+	public override AbilityType Type => AbilityType.TRIPLE_JUMP;
 
-	public AbilityType Type => AbilityType.TRIPLE_JUMP;
-
-	public void AbilityAwake(Transform character, Animator anim)
-	{
-		controller = character.GetComponent<Controller2D>();
-		player = character.GetComponent<Player>();
-	}
-
-	public void AbilityFixedUpdate()
-	{
-
-	}
-
-	public void AbilityUpdate()
+	public override void AbilityUpdate()
 	{
 		if (secondJumpPerformed && thirdJumpPerformed)
 		{
-			secondJumpPerformed = thirdJumpPerformed = !controller.Collisions.below;
+			secondJumpPerformed = thirdJumpPerformed = !playerController.Collisions.below;
 		}
 	}
 
-	public void StartUse()
+	public override void StartUse()
 	{
 		if (!enabled) return;
 
-		if (!controller.Collisions.below && !(controller.Collisions.left || controller.Collisions.right) && !controller.WallSliding)
+		if (!playerController.Collisions.below && !(playerController.Collisions.left || playerController.Collisions.right) && !playerController.WallSliding)
 		{
 			if(!secondJumpPerformed)
 			{
@@ -50,31 +32,21 @@ public class TripleJump : ScriptableObject, IAbility
 
 			if(!thirdJumpPerformed)
 			{
-				controller.ForceJump();
+				playerController.ForceJump();
 				thirdJumpPerformed = true;
 			}
 			
 		}
 	}
 
-	public void StopUse()
+	public override void StopUse()
 	{
 		if (!enabled) return;
 
 		if (thirdJumpPerformed && secondJumpPerformed)
 		{
-			controller.OnJumpInputUp();
+			playerController.OnJumpInputUp();
 		}
 
-	}
-
-	public void Disable()
-	{
-		enabled = false;
-	}
-
-	public void Enable()
-	{
-		enabled = true;
 	}
 }

@@ -5,23 +5,22 @@ using System.Collections.Generic;
 public class PlatformController : RaycastController, IFixedTick
 {
 
-	public LayerMask passengerMask;
-
-	public Vector3[] localWaypoints;
-	Vector3[] globalWaypoints;
-
-	public float speed;
-	public bool cyclic;
-	public float waitTime;
+	[SerializeField] private LayerMask passengerMask;
+	[SerializeField] private Vector3[] localWaypoints;
+	[SerializeField] private float speed;
+	[SerializeField] private bool cyclic;
+	[SerializeField] private float waitTime;
 	[Range(0, 2)]
-	public float easeAmount;
+	[SerializeField] private float easeAmount;
 
-	int fromWaypointIndex;
-	float percentBetweenWaypoints;
-	float nextMoveTime;
+	private Vector3[] globalWaypoints;
+	private float percentBetweenWaypoints;
+	private float nextMoveTime;
+	private int fromWaypointIndex;
+	private bool active;
 
-	List<PassengerMovement> passengerMovement;
-	Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
+	private List<PassengerMovement> passengerMovement;
+	private Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
 	private bool process;
 
@@ -38,8 +37,21 @@ public class PlatformController : RaycastController, IFixedTick
 		}
 	}
 
+	public void Enable()
+	{
+		active = true;
+	}
+
+	public void Disable()
+	{
+		//TODO: disable after reaching waypoint
+		active = false;
+	}
+
 	public void OnFixedTick()
 	{
+		if (!active) return;
+
 		UpdateRaycastOrigins();
 
 		Vector3 velocity = CalculatePlatformMovement();

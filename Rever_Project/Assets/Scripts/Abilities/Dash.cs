@@ -5,18 +5,13 @@ using RedBlueGames.LiteFSM;
 using UniRx;
 
 [CreateAssetMenu(menuName = "Game/Abilities/Dash")]
-public class Dash : ScriptableObject, IAbility
+public class Dash : DefaultAbility
 {
 	[SerializeField] private float timeForDash;
 	[SerializeField] private float dashDistance;
 	[SerializeField] private float jumpBeforeDashAmount;
-	public AbilityType Type => AbilityType.DASH;
+	public override AbilityType Type => AbilityType.DASH;
 
-	public bool Enabled => enabled;
-
-	private Controller2D characterController;
-	private Player player;
-	private Transform playerTransform;
 	private float dashForce;
 	private float currentTime;
 	private int dashDirection;
@@ -30,13 +25,11 @@ public class Dash : ScriptableObject, IAbility
 		NONE,
 	}
 
-	public void AbilityAwake(Transform character, Animator anim)
+	public override void AbilityAwake(Transform character, Animator anim)
 	{
-		dashForce = dashDistance / timeForDash;
-		characterController = character.GetComponent<Controller2D>();
-		player = character.GetComponent<Player>();
-		playerTransform = character;
+		base.AbilityAwake(character, anim);
 
+		dashForce = dashDistance / timeForDash;
 		StateMachineAwake();
 	}
 
@@ -48,12 +41,7 @@ public class Dash : ScriptableObject, IAbility
 		this.fsm = new StateMachine<DashState>(stateList.ToArray(), DashState.NONE);
 	}
 
-	public void AbilityUpdate()
-	{
-		
-	}
-
-	public void AbilityFixedUpdate()
+	public override void AbilityFixedUpdate()
 	{
 		if (enabled)
 		{
@@ -63,22 +51,23 @@ public class Dash : ScriptableObject, IAbility
 
 	private void InDashEnter()
 	{
-		characterController.UseVerticalCollisions = false;
-		characterController.SetGravity(0);
+		playerController.UseVerticalCollisions = false;
+		playerController.SetGravity(0);
 		playerTransform.Translate(new Vector3(0, jumpBeforeDashAmount, 0));
 		currentTime = timeForDash;
-		characterController.useInput = false;
+		playerController.useInput = false;
 		FMODUnity.RuntimeManager.PlayOneShot("event:/Dash");
+		playerAnimator.SetTrigger("Dash");
 
-		if(characterController.WallSliding)
+		if(playerController.WallSliding)
 		{
-			dashDirection = -characterController.WallDirectionX;
+			dashDirection = -playerController.WallDirectionX;
 			player.IsUpdatingTurn = false;
-			player.Turn(!(characterController.WallDirectionX > 0));
+			player.Turn(!(playerController.WallDirectionX > 0));
 		}
 		else
 		{
-			dashDirection = (int)characterController.LastInputFacing.x;
+			dashDirection = (int)playerController.LastInputFacing.x;
 		}
 	}
 
@@ -87,7 +76,7 @@ public class Dash : ScriptableObject, IAbility
 		if (currentTime > 0)
 		{
 			currentTime -= d;
-			characterController.SetForce(new Vector3(dashForce * dashDirection, 0, 0));
+			playerController.SetForce(new Vector3(dashForce * dashDirection, 0, 0));
 		}
 		else
 		{
@@ -97,13 +86,13 @@ public class Dash : ScriptableObject, IAbility
 
 	private void NoneEnter()
 	{
-		characterController.UseVerticalCollisions = true;
-		characterController.ResetGravity();
-		characterController.useInput = true;
+		playerController.UseVerticalCollisions = true;
+		playerController.ResetGravity();
+		playerController.useInput = true;
 		player.IsUpdatingTurn = true;
 	}
 
-	public void StartUse()
+	public override void StartUse()
 	{
 		if (enabled)
 		{
@@ -111,21 +100,16 @@ public class Dash : ScriptableObject, IAbility
 		}
 	}
 
-	public void StopUse()
+	public override void Enable()
 	{
-		
+		base.Enable();
+		fsm.ChangeState(DashState.NONE);
 	}
 
-	public void Enable()
+	public override void Disable()
 	{
+		base.Disable();
 		fsm.ChangeState(DashState.NONE);
-		enabled = true;
-	}
-
-	public void Disable()
-	{
-		fsm.ChangeState(DashState.NONE);
-		enabled = false;
 	}
 
 }
