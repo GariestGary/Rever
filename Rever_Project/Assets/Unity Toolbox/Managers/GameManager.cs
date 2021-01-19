@@ -110,6 +110,8 @@ public class GameManager : ManagerBase, IExecute
 
 		currentLevelHandler.SetupLevel(instantiatedPlayer.transform, data.nextSpawnPointTag);
 
+		save.Load();
+
 		Toolbox.Instance.StartCoroutine(SceneOpenedDelay(data.direction));
 	}
 
@@ -174,7 +176,6 @@ public class GameManager : ManagerBase, IExecute
 		}
 
 		currentSceneName = data.nextLevelName;
-		save.Load();
 
 		OpenScene(data);
 

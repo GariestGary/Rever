@@ -5,5 +5,5 @@ using System;
 
 public interface ISwitcher
 {
-	event Action Enabled;
+	event Action OnEnable;
 }

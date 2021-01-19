@@ -1,13 +1,16 @@
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlatformsHandler : MonoCached
+public class PlatformsHandler : Saveable
 {
-    [SerializeField] private SwitcherWrapper switcher;
+    [SerializeField] private MonoBehaviour switcher;
 	[SerializeField] private bool enableAtStart;
 	
 	private List<PlatformController> platforms = new List<PlatformController>();
+
+	private Dictionary<int, bool> platformStates = new Dictionary<int, bool>();
 
 	public override void Rise()
 	{
@@ -22,12 +25,12 @@ public class PlatformsHandler : MonoCached
 		}
 		else
 		{
-			if (switcher)
+			if (switcher != null)
 			{
 				foreach (var platform in platforms)
 				{
 					platform.Disable();
-					switcher.Enabled += platform.Enable;
+					(switcher as ISwitcher).OnEnable += platform.Enable;
 				}
 			}
 			else
@@ -46,13 +49,45 @@ public class PlatformsHandler : MonoCached
 		}
 	}
 
+	public override object CaptureState()
+	{
+		platformStates.Clear();
+
+		for (int i = 0; i < platforms.Count; i++)
+		{
+			platformStates.Add(i, platforms[i].Running);
+		}
+
+		return platformStates;
+	}
+
+	public override void RestoreState(string state)
+	{
+		platformStates = JsonConvert.DeserializeObject<Dictionary<int, bool>>(state);
+
+		for (int i = 0; i < platforms.Count; i++)
+		{
+			if (platformStates.ContainsKey(i))
+			{
+				if (platformStates[i])
+				{
+					platforms[i].Enable();
+				}
+				else
+				{
+					platforms[i].Disable();
+				}
+			}
+		}
+	}
+
 	private void OnDisable()
 	{
-		if(switcher)
+		if(switcher != null)
 		{
 			foreach (var platform in platforms)
 			{
-				switcher.Enabled -= platform.Enable;
+				(switcher as ISwitcher).OnEnable -= platform.Enable;
 			}
 		}
 	}

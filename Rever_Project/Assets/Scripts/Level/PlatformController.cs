@@ -22,6 +22,8 @@ public class PlatformController : RaycastController
 	private List<PassengerMovement> passengerMovement;
 	private Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
+	public bool Running => active;
+
 	public override void Rise()
 	{
 		base.Rise();
@@ -216,6 +218,7 @@ public class PlatformController : RaycastController
 		}
 	}
 
+#if UNITY_EDITOR
 	void OnDrawGizmos()
 	{
 		if (localWaypoints != null)
@@ -231,4 +234,5 @@ public class PlatformController : RaycastController
 			}
 		}
 	}
+#endif
 }

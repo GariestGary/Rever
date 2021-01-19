@@ -1,11 +1,16 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ButtonsHandler : SwitcherWrapper
+public class ButtonsHandler : Saveable, ISwitcher
 {
     [SerializeField] private List<Button> buttons = new List<Button>();
+
+	private Dictionary<int, bool> buttonStates = new Dictionary<int, bool>();
+
+	public event Action OnEnable;
 
 	public override void Rise()
 	{
@@ -34,7 +39,39 @@ public class ButtonsHandler : SwitcherWrapper
 
 		if(pressedAll)
 		{
-			InvokeEnable();
+			OnEnable?.Invoke();
+		}
+	}
+
+	public override object CaptureState()
+	{
+		buttonStates.Clear();
+
+		for (int i = 0; i < buttons.Count; i++)
+		{
+			buttonStates.Add(i, buttons[i].Pressed);
+		}
+
+		return buttonStates;
+	}
+
+	public override void RestoreState(string state)
+	{
+		buttonStates = JsonConvert.DeserializeObject<Dictionary<int, bool>>(state);
+
+		for (int i = 0; i < buttons.Count; i++)
+		{
+			if(buttonStates.ContainsKey(i))
+			{
+				if(buttonStates[i])
+				{
+					buttons[i].Press();
+				}
+				else
+				{
+					buttons[i].Release();
+				}
+			}
 		}
 	}
 

@@ -16,11 +16,8 @@ public class Button : MonoCached
 	[SerializeField] private bool oncePressed;
 
 	private int stayingObjectsCount;
-	private bool pressed;
+	private bool pressed = false;
 
-	private bool process;
-
-	public bool Process => process;
 	public bool Pressed => pressed;
 	public int StayingObjectsCount => stayingObjectsCount;
 
@@ -71,28 +68,25 @@ public class Button : MonoCached
 	public void Press()
 	{
 		if (pressed) return;
-
+		
 		pressed = true;
 		renderer.sprite = pressedSprite;
 		OnPress?.Invoke();
+
+		if(oncePressed)
+		{
+			GetComponent<Collider2D>().enabled = false;
+		}
 	}
 
 	public void Release()
 	{
 		if (!pressed) return;
 
+		if (oncePressed) return;
+
 		pressed = false;
 		renderer.sprite = releasedSprite;
 		OnRelease?.Invoke();
-	}
-
-	private void OnEnable()
-	{
-		process = true;
-	}
-
-	private void OnDisable()
-	{
-		process = false;
 	}
 }
