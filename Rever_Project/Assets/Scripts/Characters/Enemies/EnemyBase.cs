@@ -106,6 +106,7 @@ public class EnemyBase : MonoCached
 			if(!IsPlayerNoticed)
 			{
 				noticedPlayer = playerCollider.GetComponent<Player>();
+				PlayerNoticedEvent?.Invoke();
 				pb.Reset();
 			}
 			
@@ -115,6 +116,7 @@ public class EnemyBase : MonoCached
 		{
 			if(IsPlayerNoticed)
 			{
+				PlayerLostEvent?.Invoke();
 				noticedPlayer = null;
 			}
 			

@@ -10,32 +10,32 @@ public class HitSide
 
         float angle = Vector2.SignedAngle(Vector2.up, hitDirection);
 
-        if(angle >= 0 && angle < 45)
+        if(angle >= 0 && angle < 25)
 		{
             return Side.TOP;
 		}
 
-        if(angle >= 45 && angle < 135)
+        if(angle >= 25 && angle < 160)
 		{
-            return Side.RIGHT;
+            return Side.LEFT;
 		}
 
-        if(angle >= 135 && angle <= 180)
+        if(angle >= 160 && angle <= 180)
 		{
             return Side.BOTTOM;
 		}
 
-        if (angle <= 0 && angle > -45)
+        if (angle <= 0 && angle > -25)
         {
             return Side.TOP;
         }
 
-        if (angle <= -45 && angle > -135)
+        if (angle <= -25 && angle > -160)
         {
-            return Side.LEFT;
+            return Side.RIGHT;
         }
 
-        if (angle <= -135 && angle >= -180)
+        if (angle <= -160 && angle >= -180)
         {
             return Side.BOTTOM;
         }
