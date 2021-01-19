@@ -2,30 +2,34 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Parallax : MonoBehaviour, IAwake, ILateTick
+public class Parallax : MonoCached
 {
 	[SerializeField] private float parallaxAmount;
 	[SerializeField] private float smoothing;
+	[SerializeField] private bool manualBlurSet;
+	[SerializeField] private float blurMultiplier;
 
     private List<ParallaxSprite> sprites = new List<ParallaxSprite>();
 
 	private Transform cam;
 
-	private bool process;
-	public bool Process => process;
-
-	public void OnAwake()
+	public override void Rise()
 	{
 		cam = Camera.main.transform;
 
 		for (int i = 0; i < transform.childCount; i++)
 		{
 			Transform transformToAdd = transform.GetChild(i);
-			sprites.Add(new ParallaxSprite(transformToAdd, transformToAdd.position));
+			sprites.Add(new ParallaxSprite(transformToAdd, transformToAdd.position, transformToAdd.GetComponent<SpriteRenderer>()));
+		}
+
+		if(!manualBlurSet)
+		{
+			SetBlurAmount();
 		}
 	}
 
-	public void OnLateTick()
+	public override void LateTick()
 	{
 		for (int i = 0; i < sprites.Count; i++)
 		{
@@ -38,25 +42,26 @@ public class Parallax : MonoBehaviour, IAwake, ILateTick
 		}
 	}
 
-	private void OnEnable()
+	[ContextMenu("Calculate Blur Amount")]
+	private void SetBlurAmount()
 	{
-		process = true;
-	}
-
-	private void OnDisable()
-	{
-		process = false;
+		for (int i = 0; i < sprites.Count; i++)
+		{
+			sprites[i].renderer.material.SetFloat("Radius", Mathf.Abs(sprites[i].sprite.position.z) * blurMultiplier);
+		}
 	}
 
 	private struct ParallaxSprite
 	{
 		public Transform sprite;
+		public SpriteRenderer renderer;
 		public Vector3 initPos;
 
-		public ParallaxSprite(Transform sprite, Vector3 initPos)
+		public ParallaxSprite(Transform sprite, Vector3 initPos, SpriteRenderer renderer)
 		{
 			this.sprite = sprite;
 			this.initPos = initPos;
+			this.renderer = renderer;
 		}
 	}
 }

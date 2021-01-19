@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConfinerSetup : MonoBehaviour, IAwake
+public class ConfinerSetup : MonoCached
 {
 	[SerializeField] private bool setConfiner;
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		if (setConfiner)
 			Toolbox.GetManager<GameManager>().SetCameraConfiner(GetComponent<PolygonCollider2D>());

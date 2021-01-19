@@ -6,7 +6,7 @@ using UniRx;
 using UnityEngine.UI;
 using DG.Tweening;
 
-public class PlayerStateUI : MonoBehaviour, IAwake
+public class PlayerStateUI : MonoCached
 {
 	[SerializeField] private Image health;
 	[Header("Item Notifier")]
@@ -28,7 +28,7 @@ public class PlayerStateUI : MonoBehaviour, IAwake
 		this.msg = msg;
 	}
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.UPDATE_UI).Subscribe(x => 
 		{

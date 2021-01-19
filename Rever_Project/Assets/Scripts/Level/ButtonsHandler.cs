@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ButtonsHandler : SwitcherWrapper, IAwake
+public class ButtonsHandler : SwitcherWrapper
 {
     [SerializeField] private List<Button> buttons = new List<Button>();
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		foreach (var button in buttons)
 		{

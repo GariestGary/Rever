@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class Button : MonoBehaviour, IAwake
+public class Button : MonoCached
 {
 	[Header("TEMPORARY")]
 	[SerializeField] private SpriteRenderer renderer;
@@ -27,7 +27,7 @@ public class Button : MonoBehaviour, IAwake
 	public event Action OnPress;
     public event Action OnRelease;
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		Release();
 	}

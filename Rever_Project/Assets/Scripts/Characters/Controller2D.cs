@@ -53,9 +53,9 @@ public class Controller2D : RaycastController
 	private Transform t;
 
 
-	public override void OnAwake()
+	public override void Rise()
 	{
-		base.OnAwake();
+		base.Rise();
 
 		t = transform;
 
@@ -88,67 +88,6 @@ public class Controller2D : RaycastController
 			directionalInput = Vector2.zero;
 		}
 	}
-
-	#region move_local
-	//public void Move(Vector2 amount, bool standingOnPlatform)
-	//{
-	//	MoveUpdate(amount * Time.fixedDeltaTime, standingOnPlatform);
-	//}
-
-	//public void Move()
-	//{
-	//	CalculateVelocity();
-	//	HandleWallSliding();
-
-	//	MoveUpdate(velocity * Time.fixedDeltaTime);
-
-	//	if (collisions.above || collisions.below)
-	//	{
-	//		if (collisions.slidingDownMaxSlope)
-	//		{
-	//			velocity.y += collisions.slopeNormal.y * -gravity * Time.fixedDeltaTime;
-	//		}
-	//		else
-	//		{
-	//			velocity.y = 0;
-	//		}
-	//	}
-	//}
-
-	//private void MoveUpdate(Vector2 moveAmount, bool standingOnPlatform = false)
-	//{
-	//	UpdateRaycastOrigins();
-
-	//	collisions.Reset();
-	//	collisions.moveAmountOld = moveAmount;
-
-	//	if (moveAmount.y < 0)
-	//	{
-	//		DescendSlope(ref moveAmount);
-	//	}
-
-	//	if (moveAmount.x != 0)
-	//	{
-	//		collisions.faceDir = (int)Mathf.Sign(moveAmount.x);
-	//	}
-
-	//	HorizontalCollisions(ref moveAmount);
-
-	//	if (moveAmount.y != 0)
-	//	{
-	//		VerticalCollisions(ref moveAmount);
-	//	}
-
-	//	t.Translate(moveAmount);
-
-	//	if (standingOnPlatform)
-	//	{
-	//		collisions.below = true;
-	//	}
-	//}
-	#endregion
-
-	#region move_from_tut
 	public void FixedUpdating()
 	{
 		CalculateVelocity();
@@ -200,7 +139,6 @@ public class Controller2D : RaycastController
 			collisions.below = true;
 		}
 	}
-	#endregion
 
 	public void SetMoveSpeed(float speed)
 	{

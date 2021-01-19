@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
-public class Test : MonoBehaviour, ITick
+public class Test : MonoCached
 {
+	float a = 1;
 	public bool Process => true;
 
-	public void OnTick()
+	public override void Tick()
 	{
-		Debug.Log("a");
+		DOTween.To(() => a, x => a = x, 5, 4); //how to tween values
 	}
 }

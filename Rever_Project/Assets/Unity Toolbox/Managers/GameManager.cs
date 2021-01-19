@@ -19,6 +19,7 @@ public class GameManager : ManagerBase, IExecute
 	[SerializeField] private string LevelsFolderPath;
 	[SerializeField] private float openedSceneDelay;
 
+	private SaveManager save;
 	private ObjectPoolManager pool;
 	private ResourcesManager res;
 	private MessageManager msg;
@@ -32,16 +33,17 @@ public class GameManager : ManagerBase, IExecute
 
 	private LevelHandler currentLevelHandler;
 
-	private GameObject instantiatedPlayerTransform;
+	private GameObject instantiatedPlayer;
 	private Player currentPlayer;
 	private Inventory currentInventory;
 
+	private AsyncOperation unloadingLevel;
+	private AsyncOperation loadingLevel;
 	private Scene mainScene;
 	private string currentSceneName;
-	private bool changingScene = false;
-	private bool nextSceneLoaded;
-	private bool previousSceneUnloaded;
 
+	public string CurrentSceneName => currentSceneName;
+	public string MainSceneName => "Main";
 	public Transform CameraTransform => cam.transform;
 	public LevelHandler CurrentLevelHandler => currentLevelHandler;
 	public Player CurrentPlayer => currentPlayer;
@@ -49,8 +51,9 @@ public class GameManager : ManagerBase, IExecute
 	public Scene MainScene => mainScene;
 
 	[Inject]
-	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, InputManager input, DiContainer _container)
+	public void Constructor(ObjectPoolManager pool, ResourcesManager res, MessageManager msg, UpdateManager upd, SaveManager save, InputManager input, DiContainer _container)
 	{
+		this.save = save;
 		this.pool = pool;
 		this.res = res;
 		this.msg = msg;
@@ -68,7 +71,10 @@ public class GameManager : ManagerBase, IExecute
 		cam = GameObject.FindGameObjectWithTag(lookCameraTag).GetComponent<LookCamera>();
 		playerPrefab = res.GetResourceByName<GameObject>(playerPrefabName);
 
-		LoadLevel(initLevelData);
+		if(!string.IsNullOrEmpty(initLevelData.nextLevelName))
+		{
+			LoadLevel(initLevelData);
+		}
 	}
 
 	public void SetCameraConfiner(Collider2D bounds)
@@ -78,7 +84,7 @@ public class GameManager : ManagerBase, IExecute
 
 	public void ResetPlayer()
 	{
-		instantiatedPlayerTransform.transform.position = spawnPoint.transform.position;
+		instantiatedPlayer.transform.position = spawnPoint.transform.position;
 		currentPlayer.PlayerHealth.ResetHP();
 	}
 
@@ -86,28 +92,25 @@ public class GameManager : ManagerBase, IExecute
 	{
 		if(playerPrefab && cam)
 		{
-			if(instantiatedPlayerTransform == null)
+			if(instantiatedPlayer == null)
 			{
-				instantiatedPlayerTransform = pool.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, true);
-				currentPlayer = instantiatedPlayerTransform.GetComponent<Player>();
-				currentInventory = instantiatedPlayerTransform.GetComponent<Inventory>();
-				cam.SetTarget(instantiatedPlayerTransform.transform);
+				instantiatedPlayer = pool.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+				currentPlayer = instantiatedPlayer.GetComponent<Player>();
+				currentInventory = instantiatedPlayer.GetComponent<Inventory>();
+				cam.SetTarget(instantiatedPlayer.transform);
 			}
 		}
 	}
 
-	private void TryOpenScene(LevelChangeData data)
+	private void OpenScene(LevelChangeData data)
 	{
-		if (!nextSceneLoaded || !previousSceneUnloaded) return;
-
-		if(!instantiatedPlayerTransform) SpawnPlayer();
+		if(instantiatedPlayer == null) SpawnPlayer();
 
 		AddUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 
-		currentLevelHandler.SetupLevel(instantiatedPlayerTransform.transform, data.nextSpawnPointTag);
+		currentLevelHandler.SetupLevel(instantiatedPlayer.transform, data.nextSpawnPointTag);
 
 		Toolbox.Instance.StartCoroutine(SceneOpenedDelay(data.direction));
-		//TODO: 
 	}
 
 	private IEnumerator SceneOpenedDelay(float direction)
@@ -136,26 +139,46 @@ public class GameManager : ManagerBase, IExecute
 			return;
 		}
 
-		nextSceneLoaded = false;
-		previousSceneUnloaded = false;
-
 		if (string.IsNullOrEmpty(currentSceneName))
 		{
-			previousSceneUnloaded = true;
+			unloadingLevel = null;
 		}
 		else
 		{
 			FindObjectsOfType<MonoBehaviour>().Where(x => x is ISceneChange).ToList().ForEach(x => (x as ISceneChange).OnSceneChange());
 			RemoveUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
-			AsyncOperation unloadingLevel = SceneManager.UnloadSceneAsync(currentSceneName);
-			unloadingLevel.completed += _ => { previousSceneUnloaded = true; TryOpenScene(data); };
+			save.Save();
+			unloadingLevel = SceneManager.UnloadSceneAsync(currentSceneName);
 		}
 
-		
-		AsyncOperation loadingLevel = SceneManager.LoadSceneAsync(data.nextLevelName, LoadSceneMode.Additive);
-		
-		loadingLevel.completed += _ => { nextSceneLoaded = true; currentSceneName = data.nextLevelName; TryOpenScene(data); };
-		
+		loadingLevel = SceneManager.LoadSceneAsync(data.nextLevelName, LoadSceneMode.Additive);
+
+		Toolbox.Instance.StartCoroutine(LoadWaitCoroutine(data));
+	}
+
+	private IEnumerator LoadWaitCoroutine(LevelChangeData data)
+	{
+		if(unloadingLevel == null)
+		{
+			while (!loadingLevel.isDone)
+			{
+				yield return null;
+			}
+		}
+		else
+		{
+			while (!unloadingLevel.isDone && !loadingLevel.isDone)
+			{
+				yield return null;
+			}
+		}
+
+		currentSceneName = data.nextLevelName;
+		save.Load();
+
+		OpenScene(data);
+
+		yield break;
 	}
 
 	private void AddUpdatesFromScene(Scene scene)
@@ -166,10 +189,8 @@ public class GameManager : ManagerBase, IExecute
 		{
 			_container.InjectGameObject(x);
 
-			x.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Add(tick));
-			x.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Add(tick));
-			x.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Add(tick));
-			x.GetComponentsInChildren<IAwake>().ToList().ForEach(a => a.OnAwake());
+			upd.AddGameObject(x);
+			upd.RiseGameObject(x);
 		});
 	}
 
@@ -177,9 +198,7 @@ public class GameManager : ManagerBase, IExecute
 	{
 		scene.GetRootGameObjects().ToList().ForEach(x =>
 		{
-			x.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Remove(tick));
-			x.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Remove(tick));
-			x.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Remove(tick));
+			upd.RemoveGameObject(x);
 		});
 
 		currentLevelHandler.Dispose();

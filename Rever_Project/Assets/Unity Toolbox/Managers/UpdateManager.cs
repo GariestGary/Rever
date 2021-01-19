@@ -7,90 +7,87 @@ using System.Linq;
 [CreateAssetMenu(fileName = "Update", menuName = "Toolbox/Managers/Update Manager")]
 public class UpdateManager : ManagerBase, IExecute
 {
-	private List<ITick> ticks = new List<ITick>();
-	private List<IFixedTick> fixedTicks = new List<IFixedTick>();
-	private List<ILateTick> lateTicks = new List<ILateTick>();
-	private List<IShutDown> shutDowns = new List<IShutDown>();
+	private List<MonoCached> monos = new List<MonoCached>();
 
-	public List<IShutDown> ShutDowns => shutDowns;
-
-	public void Add(object obj)
+	public void Add(MonoCached monoToAdd)
 	{
-		if (obj is ITick)
+		if(monos.Contains(monoToAdd))
 		{
-			ticks.Add(obj as ITick);
+			Debug.LogWarning("Mono " + monoToAdd + " already updates");
+			return;
 		}
 
-		if (obj is IFixedTick)
+		monos.Add(monoToAdd);
+	}
+
+	public void Remove(MonoCached monoToRemove)
+	{
+		if(!monos.Contains(monoToRemove))
 		{
-			fixedTicks.Add(obj as IFixedTick);
+			Debug.LogWarning("Mono " + monoToRemove + " don't updates");
+			return;
 		}
 
-		if (obj is ILateTick)
-		{
-			lateTicks.Add(obj as ILateTick);
-		}
+		monos.Remove(monoToRemove);
+	}
 
-		if(obj is IShutDown)
+	public void RiseGameObject(GameObject obj)
+	{
+		var allMonos = obj.GetComponentsInChildren<MonoCached>();
+
+		for (int i = 0; i < allMonos.Length; i++)
 		{
-			shutDowns.Add(obj as IShutDown);
+			allMonos[i].Rise();
 		}
 	}
 
-	public void Remove(object obj)
+	public void AddGameObject(GameObject obj)
 	{
-		if (obj is ITick)
-		{
-			ticks.Remove(obj as ITick);
-		}
+		var allMonos = obj.GetComponentsInChildren<MonoCached>();
 
-		if (obj is IFixedTick)
+		for (int i = 0; i < allMonos.Length; i++)
 		{
-			fixedTicks.Remove(obj as IFixedTick);
-		}
-
-		if (obj is ILateTick)
-		{
-			lateTicks.Remove(obj as ILateTick);
+			Add(allMonos[i]);
 		}
 	}
 
+	public void RemoveGameObject(GameObject obj)
+	{
+		var allMonos = obj.GetComponentsInChildren<MonoCached>();
+
+		for (int i = 0; i < allMonos.Length; i++)
+		{
+			Remove(allMonos[i]);
+		}
+	}
 
 	public void Tick()
 	{
-		for (int i = 0; i < ticks.Count; i++)
+		for (int i = 0; i < monos.Count; i++)
 		{
-			if (ticks[i].Process)
-				ticks[i].OnTick();
+			monos[i].Tick();
 		}
 	}
 
 	public void FixedTick()
 	{
-		for (int i = 0; i < fixedTicks.Count; i++)
+		for (int i = 0; i < monos.Count; i++)
 		{
-			if (fixedTicks[i].Process)
-				fixedTicks[i].OnFixedTick();
+			monos[i].FixedTick();
 		}
 	}
 
 	public void LateTick()
 	{
-		for (int i = 0; i < lateTicks.Count; i++)
+		for (int i = 0; i < monos.Count; i++)
 		{
-			if (lateTicks[i].Process)
-				lateTicks[i].OnLateTick();
+			monos[i].LateTick();
 		}
 	}
 
-
-
-
 	public void OnExecute()
 	{
-		ticks.Clear();
-		fixedTicks.Clear();
-		lateTicks.Clear();
+		monos.Clear();
 
 		InitializeFromScene();
 
@@ -103,23 +100,14 @@ public class UpdateManager : ManagerBase, IExecute
 	{
 		Debug.Log("Initializing from scene");
 
-		var allUpdates = FindObjectsOfType(typeof(MonoBehaviour)).Where(x =>
-			x is IAwake ||
-			x is ITick ||
-			x is ILateTick ||
-			x is IFixedTick
-		);
+		MonoCached[] allMonos = FindObjectsOfType<MonoCached>();
 
-		Debug.Log("founded " + allUpdates.Count() + " updateables: " + string.Join(" ", allUpdates));
+		Debug.Log("founded " + allMonos.Count() + " updateables: " + string.Join(" ", allMonos.ToList()));
 
-		foreach (var upd in allUpdates)
+		for (int i = 0; i < allMonos.Length; i++)
 		{
-			if(upd is IAwake)
-			{
-				(upd as IAwake).OnAwake();
-			}
-
-			Add(upd);
+			Add(allMonos[i]);
+			RiseGameObject(allMonos[i].gameObject);
 		}
 	}
 }

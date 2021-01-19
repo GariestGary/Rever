@@ -8,8 +8,6 @@ using Zenject;
 [CreateAssetMenu(menuName = "Toolbox/Managers/Object Pool Manager", fileName = "Object Pool")]
 public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 {
-    [SerializeField] private int defaultPoolSize = 50;
-    [SerializeField] private int minObjectsCountToCreateNew = 5;
     [SerializeField] private List<Pool> PoolsList = new List<Pool>();
 
 	private Transform ObjectPoolParent;
@@ -30,11 +28,11 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         Pools = new Dictionary<string, LinkedList<GameObject>>();
 
         ObjectPoolParent = new GameObject().transform;
-        ObjectPoolParent.name = "PoolParent";
+        ObjectPoolParent.name = "Pool Parent";
 
         for (int i = 0; i < PoolsList.Count; i++)
         {
-            AddPool(PoolsList[i].tag, PoolsList[i].pooledObject, PoolsList[i].size, false);
+            AddPool(PoolsList[i].tag, PoolsList[i].pooledObject, PoolsList[i].size);
         }
     }
 
@@ -42,24 +40,26 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 	{
         if (Pools.ContainsKey(poolToAdd.tag))
         {
+            Debug.LogWarning("Pool with tag " + poolToAdd.tag + " already exist's");
             return;
         }
 
-        LinkedList<GameObject> objectPool = new LinkedList<GameObject>();
+        LinkedList<GameObject> objectPoolList = new LinkedList<GameObject>();
 
         for (int j = 0; j < poolToAdd.size; j++)
         {
-            CreateNewPoolObject(poolToAdd.pooledObject, objectPool);
+            CreateNewPoolObject(poolToAdd.pooledObject, objectPoolList);
         }
 
         PoolsList.Add(poolToAdd);
-        Pools.Add(poolToAdd.tag, objectPool);
+        Pools.Add(poolToAdd.tag, objectPoolList);
     }
 
-    public void AddPool(string tag, GameObject obj, int size, bool removeOnLevelChange)
+    public void AddPool(string tag, GameObject obj, int size)
     {
         if (Pools.ContainsKey(tag))
         {
+            Debug.LogWarning("Pool with tag " + tag + " already exists");
             return;
         }
 
@@ -73,69 +73,58 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         Pools.Add(tag, objectPool);
     }
 
-    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, bool callAwakes = true, Transform parent = null, string poolTag = "", bool removePoolOnLevelChange = false)
+    public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
 	{
         GameObject obj;
-
-        if(!string.IsNullOrEmpty(poolTag))
-		{
-            if(Pools.ContainsKey(poolTag))
-			{
-                CreateNewPoolObject(prefab, Pools[poolTag]);
-			}
-            else
-			{
-                AddPool(poolTag, prefab, defaultPoolSize, removePoolOnLevelChange);
-			}
-
-            obj = TryGetObject(poolTag, position, rotation, parent);
-		}
-        else
-		{
-            obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
-            _container.Inject(obj);
-
-            if(callAwakes)
-			{
-                obj.GetComponentsInChildren<IAwake>().ToList().ForEach(a => a.OnAwake());
-            }
-
-            obj.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Add(tick));
-            obj.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Add(tick));
-            obj.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Add(tick));
-        }
-
+        obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
+        upd.RiseGameObject(obj);
+        upd.AddGameObject(obj);
         return obj;
 	}
 
-    public GameObject TryGetObject(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
+    /// <summary>
+    /// Spawns GameObject from pool with specified tag, then calls all OnSpawn methods in it
+    /// </summary>
+    /// <param name="poolTag">pool tag with necessary object</param>
+    /// <param name="position">initial position</param>
+    /// <param name="rotation">initial rotation</param>
+    /// <param name="parent">parent transform for GameObject</param>
+    /// <param name="data">data to provide in GameObject</param>
+    /// <returns>GameObject from pool</returns>
+    public GameObject Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent = null, object data = null)
     {
+        //Returns null if object pool with specified tag doesn't exists
         if (!Pools.ContainsKey(poolTag))
         {
-            Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exist");
+            Debug.LogWarning("Object pool with tag " + poolTag + " doesn't exists");
             return null;
         }
 
+        //Create new object if last in list is active
         if (Pools[poolTag].Last.Value.activeSelf)
         {
             CreateNewPoolObject(Pools[poolTag].Last.Value, Pools[poolTag]);
         }
 
+        //Take last object
         GameObject obj = Pools[poolTag].Last.Value;
         Pools[poolTag].RemoveLast();
 
+        //Return null if last object is null;
         if (obj == null)
         {
+            Debug.Log("object from pool " + poolTag + " you trying to spawn is null");
             return null;
         }
 
+        //Setting transform
         obj.transform.position = position;
         obj.transform.rotation = rotation;
         obj.transform.SetParent(parent);
         obj.SetActive(true);
 
-        IPooledObject[] pooled = obj.GetComponents<IPooledObject>();
-
+        //Call all spawn methods in gameobject
+        IPooledObject[] pooled = obj.GetComponentsInChildren<IPooledObject>();
 
 		for (int i = 0; i < pooled.Length; i++)
 		{
@@ -144,9 +133,10 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
                 pooled[i].OnSpawn(data, this);
             }
 		}
-       
+
+        //Add object back to start
         Pools[poolTag].AddFirst(obj);
-        return (obj);
+        return obj;
     }
 
     private GameObject CreateNewPoolObject(GameObject obj, LinkedList<GameObject> pool)
@@ -154,13 +144,20 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         GameObject poolObj = Instantiate(obj);
         poolObj.name = obj.name;
         poolObj.transform.SetParent(ObjectPoolParent);
-        
+
+        upd.RiseGameObject(poolObj);
+
         poolObj.gameObject.SetActive(false);
         pool.AddLast(poolObj);
 
         return poolObj;
     }
 
+    /// <summary>
+    /// Removes GameObject from scene and returns it to pool
+    /// </summary>
+    /// <param name="ObjectToDespawn">object to despawn</param>
+    /// <param name="delay">delay before despawning</param>
     public void Despawn(GameObject ObjectToDespawn, int delay = 0)
     {
         if (ObjectToDespawn == null)
@@ -172,18 +169,57 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 		{
             Observable.Timer(new System.TimeSpan(0, 0, 0, 0, delay)).Subscribe(_ =>
             {
-                ObjectToDespawn.SetActive(false);
-                ObjectToDespawn.transform.SetParent(ObjectPoolParent);
+                ReturnToPool(ObjectToDespawn);
             });
         }
         else
 		{
-            ObjectToDespawn.SetActive(false);
-            ObjectToDespawn.transform.SetParent(ObjectPoolParent);
+            ReturnToPool(ObjectToDespawn);
         }
-
-        //TODO: delete from update manager
     }
+
+    /// <summary>
+    /// Analogue to Unity's GameObject disable
+    /// </summary>
+    /// <param name="obj"></param>
+    public void DisableGameObject(GameObject obj)
+	{
+        obj.SetActive(false);
+
+        var allMonos = obj.GetComponentsInChildren<MonoCached>();
+
+        for (int i = 0; i < allMonos.Length; i++)
+        {
+            allMonos[i].OnRemove();
+            upd.Remove(allMonos[i]);
+        }
+    }
+
+    /// <summary>
+    /// Analogue to Unity's GameObject enable
+    /// </summary>
+    /// <param name="obj"></param>
+    public void EnableGameObject(GameObject obj)
+	{
+        obj.SetActive(true);
+
+        var allMonos = obj.GetComponentsInChildren<MonoCached>();
+
+        for (int i = 0; i < allMonos.Length; i++)
+        {
+            allMonos[i].OnAdd();
+            upd.Add(allMonos[i]);
+        }
+    }
+
+    private void ReturnToPool(GameObject obj)
+	{
+        obj.SetActive(false);
+
+        DisableGameObject(obj);
+
+        obj.transform.SetParent(ObjectPoolParent);
+	}
 
 	public void OnSceneChange()
 	{
@@ -196,9 +232,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 
 			foreach (var obj in objectsToDestroyOnLevelChange)
 			{
-                obj.GetComponentsInChildren<ITick>().ToList().ForEach(tick => upd.Remove(tick));
-                obj.GetComponentsInChildren<ILateTick>().ToList().ForEach(tick => upd.Remove(tick));
-                obj.GetComponentsInChildren<IFixedTick>().ToList().ForEach(tick => upd.Remove(tick));
+                obj.GetComponentsInChildren<MonoCached>().ToList().ForEach(tick => upd.Remove(tick));
                 Destroy(obj);
 			}
             

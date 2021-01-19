@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class InteractableAbilityProvider : MonoBehaviour, IInteractable, IAwake
+public class InteractableAbilityProvider : MonoCached, IInteractable
 {
 	[SerializeField] private AbilityType abilityToProvide;
 	[SerializeField] private bool usePhysics;
@@ -22,7 +22,7 @@ public class InteractableAbilityProvider : MonoBehaviour, IInteractable, IAwake
 		this.msg = msg;
 	}
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		rb = GetComponent<Rigidbody2D>();
 

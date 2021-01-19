@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Door : MonoBehaviour, IAwake
+public class Door : MonoCached
 {
 	[SerializeField] private GameObject doorCollider;
     [SerializeField] private SwitcherWrapper switcher;
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		switcher.Enabled += OpenDoor;
 	}

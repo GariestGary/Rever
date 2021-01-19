@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
-public class LookCamera : MonoBehaviour, IAwake
+public class LookCamera : MonoCached
 {
     private CinemachineVirtualCamera cam;
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		cam = GetComponent<CinemachineVirtualCamera>();
 	}

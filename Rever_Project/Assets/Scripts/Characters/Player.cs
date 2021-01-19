@@ -7,12 +7,14 @@ using System.Linq;
 using UniRx;
 
 [RequireComponent (typeof (Controller2D))]
-public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
+public class Player : MonoCached
 {
 	[SerializeField] private Animator anim;
 	[SerializeField] private Transform graphicsRoot;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
+	[Space]
+	[SerializeField] private float invulnerabilityTime;
 	[Space]
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
@@ -22,7 +24,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
 	public Health PlayerHealth { get; private set; }
 	public bool IsUpdatingTurn { get; set; }
-	public bool Process { get; private set; }
+	public bool IsInvulnerable => currentInvulnerabilityTime > 0;
 
 	private Controller2D controller;
 	private InputManager input;
@@ -36,6 +38,8 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 	private bool subscribed = false;
 	private bool facingRight = true;
 
+	private float currentInvulnerabilityTime = 0;
+
 	private Action onJump;
 	private Action onHealthChange;
 
@@ -47,7 +51,7 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		this.msg = msg;
 	}
 
-	public void OnAwake() 
+	public override void Rise() 
 	{
 		InitializeFields();
 		InitializeAbilities();
@@ -55,6 +59,29 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		InitializeSubscribes();
 
 		PlayerHealth.Initialize();
+	}
+	public override void Tick() 
+	{
+		controller.HandleInput(input.MoveInput);
+		
+		AnimationUpdate();
+		TurnHandle(input.MoveInput.x);
+		InteractHandle();
+		InvulnerabilityUpdate();
+
+		for (int i = 0; i < abilities.Count; i++)
+		{
+			(abilities[i] as IAbility).AbilityUpdate();
+		}
+	}
+	public override void FixedTick()
+	{
+		controller.FixedUpdating();
+
+		for (int i = 0; i < abilities.Count; i++)
+		{
+			(abilities[i] as IAbility).AbilityFixedUpdate();
+		}
 	}
 
 	private void InitializeSubscribes()
@@ -115,20 +142,6 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 				abilitiesDictionary.Add((a as IAbility).Type, a as IAbility); 
 			}
 		});
-	}
-
-	public void OnTick() 
-	{
-		controller.HandleInput(input.MoveInput);
-		
-		AnimationUpdate();
-		TurnHandle(input.MoveInput.x);
-		InteractHandle();
-
-		for (int i = 0; i < abilities.Count; i++)
-		{
-			(abilities[i] as IAbility).AbilityUpdate();
-		}
 	}
 
 	public void TryEnableAbility(AbilityType type)
@@ -198,14 +211,27 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 		}
 	}
 
-	public void OnFixedTick()
+	private void InvulnerabilityUpdate()
 	{
-		controller.FixedUpdating();
-
-		for (int i = 0; i < abilities.Count; i++)
+		if(currentInvulnerabilityTime > 0)
 		{
-			(abilities[i] as IAbility).AbilityFixedUpdate();
+			currentInvulnerabilityTime -= Time.deltaTime;
 		}
+	}
+
+	public void TryTakeDamage(int amount, Side side)
+	{
+		if (IsInvulnerable)
+		{
+			return;
+		}
+
+		//TODO: side handle
+		//TODO: hit effect
+		Debug.Log("player hitted at " + amount + " hp from " + side);
+
+		PlayerHealth.Hit(amount);
+		currentInvulnerabilityTime = invulnerabilityTime;
 	}
 
 	private void AnimationUpdate()
@@ -303,19 +329,5 @@ public class Player : MonoBehaviour, ITick, IFixedTick, IAwake
 			if (actionCancelled != null)
 				actionCancelled -= ability.StopUse;
 		}
-	}
-
-	private void OnEnable()
-	{
-		Process = true;
-
-		SubscribeInput();
-	}
-
-	private void OnDisable()
-	{
-		Process = false;
-
-		UnsubscribeInput();
 	}
 }

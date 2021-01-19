@@ -113,7 +113,7 @@ public class Hook : ScriptableObject
 	//	line.SetPosition(0, characterTransform.position);
 	//	Vector2 charPos = new Vector2(characterTransform.position.x, characterTransform.position.y);
 
-	//	//TODO: check colliding side, because current version can cause weird behaviour
+	//	// check colliding side, because current version can cause weird behaviour
 	//	if (Vector2.Distance(charPos, targetPosition) <= dropDistance && characterController.Collisions.Colliding)
 	//	{
 	//		fsm.ChangeState(HookState.ReachDestionation);

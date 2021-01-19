@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fungus;
 using Zenject;
+using UnityEngine.Events;
 
 public class NPC : MonoBehaviour, IInteractable
 {
 	[SerializeField] private string npcName;
 	[SerializeField] private string playerTag;
-	[SerializeField] private GameObject hint;
-	[SerializeField] private Flowchart dialog;
+
+	public UnityEvent<string> InteractEvent;
+	public UnityEvent EnteredEvent;
+	public UnityEvent ExitedEvent;
 
 	private MessageManager msg;
 
@@ -27,17 +30,16 @@ public class NPC : MonoBehaviour, IInteractable
 
 	public void Entered()
 	{
-		hint.SetActive(true);
+		EnteredEvent.Invoke();
 	}
 
 	public void Exited()
 	{
-		hint.SetActive(false);
+		ExitedEvent.Invoke();
 	}
 
 	public void Interact(Player player)
 	{
-		Debug.Log("Interacting with " + npcName);
-		dialog.SendFungusMessage(npcName);
+		InteractEvent.Invoke(npcName);
 	}
 }

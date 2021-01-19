@@ -5,7 +5,7 @@ using System.Linq;
 using UniRx;
 using Zenject;
 
-public class Inventory : MonoBehaviour, IAwake
+public class Inventory : MonoCached
 {
 	[SerializeField] private string itemTag;
     //private List<Item> items = new List<Item>();

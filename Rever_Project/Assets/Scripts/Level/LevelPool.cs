@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class LevelPool : MonoBehaviour, IAwake
+public class LevelPool : MonoCached
 {
     [SerializeField] private List<Pool> poolsList = new List<Pool>();
 
@@ -15,7 +15,7 @@ public class LevelPool : MonoBehaviour, IAwake
 		this.pool = pool;
 	}
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		foreach (var poolToAdd in poolsList)
 		{

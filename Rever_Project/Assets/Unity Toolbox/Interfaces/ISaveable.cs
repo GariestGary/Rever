@@ -7,5 +7,5 @@ public interface ISaveable
 {
     string ID { get; }
     object CaptureState();
-    void RestoreState(JObject state);
+    void RestoreState(string state);
 }

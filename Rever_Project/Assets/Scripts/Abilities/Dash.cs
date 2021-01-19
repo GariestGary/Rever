@@ -55,7 +55,6 @@ public class Dash : DefaultAbility
 		playerTransform.Translate(new Vector3(0, jumpBeforeDashAmount, 0));
 		currentTime = timeForDash;
 		playerController.useInput = false;
-		FMODUnity.RuntimeManager.PlayOneShot("event:/Dash");
 		playerAnimator.SetTrigger("Dash");
 
 		if(playerController.WallSliding)

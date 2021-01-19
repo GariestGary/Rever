@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.U2D.IK;
 using RedBlueGames.LiteFSM;
 using System;
-using Bolt;
 
 public class PlayerKatanaHandler : MonoBehaviour
 {

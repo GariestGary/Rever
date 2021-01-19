@@ -1,36 +1,29 @@
 ﻿using System;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
-public class SaveableEntity : MonoBehaviour, ISaveable
+public class SaveableEntity : Saveable
 {
-	[SerializeField] private string id = string.Empty;
+	[SerializeField] private SaveData data = new SaveData();
 
-	[ContextMenu("Generate ID")]
-	public void GenerateID() => id = Guid.NewGuid().ToString();
-	public string ID => id;
-
-	[SerializeField] private int lvl = 0;
-	[SerializeField] private float exp = 0;
-	[SerializeField] private string msg = "";
-
-	public object CaptureState()
+	public override object CaptureState()
 	{
-		return new SaveData { lvl = this.lvl, exp = this.exp, msg = this.msg };
+		return data;
 	}
 
-	public void RestoreState(JObject state)
+	public override void RestoreState(string state)
 	{
 
-		var data = state.ToObject<SaveData>();
+		var restoreData = JsonConvert.DeserializeObject<SaveData>(state);
 
-		lvl = data.lvl;
-		exp = data.exp;
-		msg = data.msg;
+		data.lvl = restoreData.lvl;
+		data.exp = restoreData.exp;
+		data.msg = restoreData.msg;
 	}
 
 	[Serializable]
-	struct SaveData
+	class SaveData
 	{
 		public int lvl;
 		public float exp;

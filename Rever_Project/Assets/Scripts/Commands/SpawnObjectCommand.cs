@@ -41,7 +41,7 @@ public class SpawnObjectCommand : DefaultCommand
 		//	return CommandProcessedMessage.Send(false, "Item with this name doesn't exist");
 		//}
 
-		objToSpawn = Toolbox.GetManager<ObjectPoolManager>().TryGetObject(args[0], pos, Quaternion.Euler(rot), null, null);
+		objToSpawn = Toolbox.GetManager<ObjectPoolManager>().Spawn(args[0], pos, Quaternion.Euler(rot), null, null);
 
 		if (!objToSpawn)
 		{

@@ -2,7 +2,7 @@
 using System.Collections;
 
 [RequireComponent (typeof (BoxCollider2D))]
-public class RaycastController : MonoBehaviour, IAwake 
+public class RaycastController : MonoCached
 {
 
 	public LayerMask collisionMask;
@@ -23,7 +23,7 @@ public class RaycastController : MonoBehaviour, IAwake
 	public BoxCollider2D raycastCollider;
 	public RaycastOrigins raycastOrigins;
 
-	public virtual void OnAwake() 
+	public override void Rise() 
 	{
 		raycastCollider = GetComponent<BoxCollider2D> ();
 

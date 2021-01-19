@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class NextLevelArea : MonoBehaviour, IAwake
+public class NextLevelArea : MonoCached
 {
 	[SerializeField] private Transform entryPoint;
 	[SerializeField] private string spawnPointTag;
@@ -21,7 +21,7 @@ public class NextLevelArea : MonoBehaviour, IAwake
 		this.game = game;
 	}
 
-	public void OnAwake()
+	public override void Rise()
 	{
 		entryArea = GetComponent<Collider2D>();
 

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PlatformController : RaycastController, IFixedTick
+public class PlatformController : RaycastController
 {
 
 	[SerializeField] private LayerMask passengerMask;
@@ -22,13 +22,9 @@ public class PlatformController : RaycastController, IFixedTick
 	private List<PassengerMovement> passengerMovement;
 	private Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
-	private bool process;
-
-	public bool Process => process;
-
-	public override void OnAwake()
+	public override void Rise()
 	{
-		base.OnAwake();
+		base.Rise();
 
 		globalWaypoints = new Vector3[localWaypoints.Length];
 		for (int i = 0; i < localWaypoints.Length; i++)
@@ -48,7 +44,7 @@ public class PlatformController : RaycastController, IFixedTick
 		active = false;
 	}
 
-	public void OnFixedTick()
+	public override void FixedTick()
 	{
 		if (!active) return;
 
@@ -234,17 +230,5 @@ public class PlatformController : RaycastController, IFixedTick
 				Gizmos.DrawLine(globalWaypointPos - Vector3.left * size, globalWaypointPos + Vector3.left * size);
 			}
 		}
-	}
-
-	
-
-	private void OnEnable()
-	{
-		process = true;
-	}
-
-	private void OnDisable()
-	{
-		process = false;
 	}
 }
