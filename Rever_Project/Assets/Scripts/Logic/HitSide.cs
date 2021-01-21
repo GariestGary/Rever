@@ -47,12 +47,12 @@ public class HitSide
 public class HitInfo
 {
     public int damage;
-    public Side side;
+    public Vector2 from;
 
-	public HitInfo(int damage, Side side)
+	public HitInfo(int damage, Vector2 from)
 	{
 		this.damage = damage;
-		this.side = side;
+		this.from = from;
 	}
 }
 

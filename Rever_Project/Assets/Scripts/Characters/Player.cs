@@ -229,7 +229,7 @@ public class Player : MonoCached
 
 		//TODO: side handle
 		//TODO: hit effect
-		Debug.Log("player hitted at " + info.damage + " hp from " + info.side);
+		Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
 
 		PlayerHealth.Hit(info.damage);
 		currentInvulnerabilityTime = invulnerabilityTime;

@@ -163,7 +163,7 @@ public class FactoryWorker : EnemyBase
 		{
 			collider.TryGetComponent(out Player player);
 
-			player.TryTakeDamage(new HitInfo(damage, HitSide.CalculateHitSide(position, player.position)));
+			player.TryTakeDamage(new HitInfo(damage, t.position));
 		}
 	}
 

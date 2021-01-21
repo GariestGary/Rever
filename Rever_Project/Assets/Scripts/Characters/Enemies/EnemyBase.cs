@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using Zenject;
 
-[RequireComponent(typeof(RigidBody2DController))]
 public class EnemyBase : MonoCached
 {
 	[SerializeField] protected int groundCheckSteps;
@@ -94,13 +93,18 @@ public class EnemyBase : MonoCached
 				origin.y += 0.05f;
 			}
 
-			Debug.DrawRay(origin, (facingRight ? Vector2.right : Vector2.left) * distance, Color.red);
+			Debug.DrawRay(origin, (facingRight ? Vector2.right : Vector2.left) * distance, Color.red, 1);
 
 			RaycastHit2D hit = Physics2D.Raycast(origin, facingRight ? Vector2.right : Vector2.left, distance, groundLayer);
 
 			if (hit)
 			{
-				return true;
+				float angle = Vector2.Angle(Vector2.up, hit.normal);
+
+				if(angle > rbController.MaxSlopeAngle)
+				{
+					return true;
+				}
 			}
 		}
 

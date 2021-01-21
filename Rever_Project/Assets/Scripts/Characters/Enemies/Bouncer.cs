@@ -11,6 +11,7 @@ public class Bouncer : EnemyBase
     [SerializeField] protected float jumpIntervalMin;
     [SerializeField] protected float jumpIntervalMax;
     [Space]
+	[Range(0.01f, 1)]
     [SerializeField] protected float timeStep;
     [SerializeField] protected float maxTime;
     [SerializeField] protected bool chasePlayer;
@@ -58,12 +59,41 @@ public class Bouncer : EnemyBase
 
     private void UpdateBounce(float d)
 	{
-		if (currentInterval <= 0 && rbController.Collision.below)
+		if (IsPlayerNoticed && chasePlayer)
 		{
-
+			currentInterval = 0;
+			fsm.ChangeState(States.Chase);
 		}
 
-        currentInterval -= d;
+		if (currentInterval <= 0 && rbController.Collision.below)
+		{
+			if (facingRight)
+			{
+				if (IsDestinationAvailable(1) && !IsWallAhead(c.bounds.size.x))
+				{
+					Jump(1);
+					currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
+				}
+				else
+				{
+					facingRight = !facingRight;
+				}
+			}
+			else
+			{
+				if (IsDestinationAvailable(-1) && !IsWallAhead(c.bounds.size.x))
+				{
+					Jump(-1);
+					currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
+				}
+				else
+				{
+					facingRight = !facingRight;
+				}
+			}
+		}
+
+		currentInterval -= d;
 	}
 
     //CHASE
@@ -117,43 +147,49 @@ public class Bouncer : EnemyBase
 
 			hit = Physics2D.Linecast(prev, pos, groundLayer);
 
+			Debug.DrawLine(prev, pos, Color.red, 1);
+
 			if (hit)
 			{
 				if (hit.transform.CompareTag("Platform"))
 				{
+					Debug.Log("Platform hit");
 					return false;
 				}
 
-				float angle = Vector2.SignedAngle(Vector2.up, hit.normal);
+				Debug.DrawRay(hit.point, hit.normal, Color.green);
+
+				float angle = Vector2.Angle(Vector2.up, hit.normal);
 
 				if (angle == 0 && (rbController.Collision.climbingSlope || Mathf.Abs(t.position.y - hit.point.y) < maxGroundHeight))
 				{
+					Debug.Log("Flat hit");
 					return true;
 				}
 
-				if ((angle < rbController.MaxSlopeAngle && angle > 0) || (angle > -rbController.MaxSlopeAngle && angle < 0))
+				if (angle < rbController.MaxSlopeAngle)
 				{
+					Debug.Log("Slope hit");
 					return true;
 				}
 
 				return false;
 			}
-
-			Debug.DrawLine(prev, pos, Color.red, 1);
+			
 			prev = pos;
 		}
 	}
 
-	protected Vector2 PlotTrajectoryAtTime(Vector2 start, Vector2 startVelocity, float time)
-    {
-        return start + startVelocity * time + Physics2D.gravity * time * time * (1 - rbController.RB.drag);
-    }
+	protected Vector3 PlotTrajectoryAtTime(Vector3 start, Vector3 startVelocity, float time)
+	{
+		return start + startVelocity * time + Physics.gravity * time * time * (1 - rbController.RB.drag);
+	}
 
 	private void OnTriggerStay2D(Collider2D collision)
 	{
         if (collision.TryGetComponent(out Player player))
         {
-            player.TryTakeDamage(new HitInfo(damage, HitSide.CalculateHitSide(position, player.position)));
+            player.TryTakeDamage(new HitInfo(damage, t.position));
         }
     }
 }
