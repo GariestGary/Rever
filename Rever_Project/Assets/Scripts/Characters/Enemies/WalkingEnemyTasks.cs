@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class WalkingEnemyTasks : EnemyBase
 {
-	[SerializeField] protected LayerMask groundLayer;
 	[SerializeField] protected Transform edgeCheckTransform;
 	[SerializeField] protected float edgeCheckDistance;
 	[SerializeField] protected List<Transform> wallCheckTransforms;
@@ -20,7 +19,10 @@ public class WalkingEnemyTasks : EnemyBase
 	{
 		for (int i = 0; i < wallCheckTransforms.Count; i++)
 		{
+			if(Physics2D.Raycast(wallCheckTransforms[i].position, t.right, wallCheckDistance, groundLayer))
+			{
 
+			}
 		}
 	}
 }

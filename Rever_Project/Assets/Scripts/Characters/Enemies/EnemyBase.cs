@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Panda;
 using UnityEngine.Events;
 
 public class EnemyBase : MonoCached
 {
-	[SerializeField] protected Transform groundCheckTransform;
+	[SerializeField] protected int groundCheckSteps;
 	[SerializeField] protected float playerSearchRadius;
 	[SerializeField] protected float playerChaseRadius;
+	[SerializeField] protected float maxAllowedSlopeAngle;
 	[SerializeField] protected LayerMask playerLayer;
 	[SerializeField] protected LayerMask groundLayer;
 	[Space]
@@ -18,31 +18,25 @@ public class EnemyBase : MonoCached
 	public UnityEvent PlayerLostEvent;
 
 	protected Rigidbody2D rb;
+	protected Collider2D c;
 	protected Animator anim;
-	protected PandaBehaviour pb;
 	protected Transform t;
 	protected Health health;
+	protected bool facingRight;
 
 	protected Player noticedPlayer;
 
 	public Health SelfHealth => health;
 
-	[Task]
 	public bool IsPlayerAbove => IsPlayerNoticed && (noticedPlayer.transform.position.y >= t.position.y);
-	[Task]
 	public bool IsPlayerBelow => IsPlayerNoticed && (noticedPlayer.transform.position.y < t.position.y);
-	[Task]
 	public bool IsPlayerOnRight => IsPlayerNoticed && (noticedPlayer.transform.position.x >= t.position.x);
-	[Task]
 	public bool IsPlayerOnLeft => IsPlayerNoticed && (noticedPlayer.transform.position.x < t.position.x);
 
-	[Task]
 	public bool IsPlayerNoticed => noticedPlayer;
 
-	[Task]
 	public bool IsPlayerInSearchRadius => CheckPlayerInRadius(playerSearchRadius);
 
-	[Task]
 	public bool IsPlayerInChaseRadius => CheckPlayerInRadius(playerChaseRadius);
 
 	public override void Rise()
@@ -50,26 +44,56 @@ public class EnemyBase : MonoCached
 		rb = GetComponent<Rigidbody2D>();
 		anim = GetComponent<Animator>();
 		t = transform;
-		pb = GetComponent<PandaBehaviour>();
+		c = GetComponent<Collider2D>();
 	}
 
 	public override void Tick()
 	{
-		//pb.Reset();
-		pb.Tick();
+
 	}
 
-	[Task]
-	protected void GroundedCheck()
+	protected bool IsGrounded()
 	{
-		if(Physics2D.OverlapCircle(groundCheckTransform.position, 0.2f, groundLayer))
+		float spacing = c.bounds.size.x / (groundCheckSteps - 1);
+		Vector2 startPos = new Vector2(c.bounds.min.x, c.bounds.min.y);
+
+		for (int i = 0; i < groundCheckSteps; i++)
 		{
-			Task.current.Succeed();
+			Vector2 origin = startPos + Vector2.right * spacing * i;
+
+			Debug.DrawRay(origin, Vector2.down * 1, Color.red);
+
+			RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, groundLayer);
+
+			if(hit)
+			{
+				return true;
+			}
 		}
-		else
+
+		return false;
+	}
+
+	protected bool IsOnSlope()
+	{
+		float spacing = c.bounds.size.x / (groundCheckSteps - 1);
+		Vector2 startPos = new Vector2(c.bounds.min.x, c.bounds.min.y);
+
+		for (int i = 0; i < groundCheckSteps; i++)
 		{
-			Task.current.Fail();
+			Vector2 origin = startPos + Vector2.right * spacing * i;
+
+			Debug.DrawRay(origin, Vector2.down * 1, Color.red);
+
+			RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, groundLayer);
+
+			if (Vector2.Angle(Vector2.up, hit.normal) != 0)
+			{
+				return true;
+			}
 		}
+
+		return false;
 	}
 
 	public Vector2 GetDirectionToPlayer()
@@ -107,7 +131,6 @@ public class EnemyBase : MonoCached
 			{
 				noticedPlayer = playerCollider.GetComponent<Player>();
 				PlayerNoticedEvent?.Invoke();
-				pb.Reset();
 			}
 			
 			return true;

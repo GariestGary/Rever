@@ -72,22 +72,22 @@
             return state;
         }
 
-        private State<T>.EnterMethod FindEnterDelegateByName(Object classInstanceToReflect, string methodName)
+        private State<T>.EnterMethod FindEnterDelegateByName(object classInstanceToReflect, string methodName)
         {
             return CreateDelegateForMethodByname(classInstanceToReflect, typeof(State<T>.EnterMethod), methodName) as State<T>.EnterMethod;
         }
 
-        private State<T>.ExitMethod FindExitDelegateByName(Object classInstanceToReflect, string methodName)
+        private State<T>.ExitMethod FindExitDelegateByName(object classInstanceToReflect, string methodName)
         {
             return CreateDelegateForMethodByname(classInstanceToReflect, typeof(State<T>.ExitMethod), methodName) as State<T>.ExitMethod;
         }
 
-        private State<T>.UpdateMethod FindUpdateDelegateByName(Object classInstanceToReflect, string methodName)
+        private State<T>.UpdateMethod FindUpdateDelegateByName(object classInstanceToReflect, string methodName)
         {
             return CreateDelegateForMethodByname(classInstanceToReflect, typeof(State<T>.UpdateMethod), methodName) as State<T>.UpdateMethod;
         }
 
-        private static Delegate CreateDelegateForMethodByname(Object classInstanceToReflect, Type delegateType, string methodName)
+        private static Delegate CreateDelegateForMethodByname(object classInstanceToReflect, Type delegateType, string methodName)
         {
             var methodInfo = classInstanceToReflect.GetType().GetMethod(methodName,
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
