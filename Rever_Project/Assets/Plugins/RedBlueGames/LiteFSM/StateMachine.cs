@@ -21,6 +21,8 @@
             }
         }
 
+        public T CurrentStateID => currentStateID;
+
         /// <summary>
         /// Initializes a new instance of a <see cref="T:RedBlueGames.LiteFSM.StateMachine`1"/>.
         /// Immediately Enters (calls the Enter method on) the supplied Initial state.

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BouncingEnemy : EnemyBase
+public class Bouncer : EnemyBase
 {
     [SerializeField] protected float jumpVelocityY;
     [SerializeField] protected float jumpVelocityX;
@@ -18,13 +18,13 @@ public class BouncingEnemy : EnemyBase
     protected bool rightDirection = true;
     protected float currentInterval;
 
-    private enum BouncingStates
+    public enum States
 	{
         Bounce,
         Chase,
 	}
 
-    private StateMachine<BouncingStates> fsm;
+    private StateMachine<States> fsm;
 
 	public override void Rise()
 	{
@@ -44,10 +44,10 @@ public class BouncingEnemy : EnemyBase
 
     private void SetupFSM()
 	{
-        var stateList = new List<State<BouncingStates>>();
-        stateList.Add(new State<BouncingStates>(BouncingStates.Bounce, EnterBounce, null, UpdateBounce));
-        stateList.Add(new State<BouncingStates>(BouncingStates.Chase, EnterChase, null, UpdateChase));
-        fsm = new StateMachine<BouncingStates>(stateList.ToArray(), BouncingStates.Bounce);
+        var stateList = new List<State<States>>();
+        stateList.Add(new State<States>(States.Bounce, EnterBounce, null, UpdateBounce));
+        stateList.Add(new State<States>(States.Chase, EnterChase, null, UpdateChase));
+        fsm = new StateMachine<States>(stateList.ToArray(), States.Bounce);
     }
 
 	#region states
@@ -63,7 +63,7 @@ public class BouncingEnemy : EnemyBase
         if(IsPlayerNoticed && chasePlayer)
 		{
             currentInterval = 0;
-            fsm.ChangeState(BouncingStates.Chase);
+            fsm.ChangeState(States.Chase);
 		}
 
         if(currentInterval <= 0 && IsGrounded())
@@ -115,6 +115,11 @@ public class BouncingEnemy : EnemyBase
 
 	}
 	#endregion
+
+    public void Test(States state)
+	{
+
+	}
 
     protected bool IsWallStuck()
 	{
