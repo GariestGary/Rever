@@ -37,7 +37,7 @@ public class Slash : DefaultAbility
 	public override void AbilityUpdate()
 	{
 		Vector3 offset = hitCheckOffset;
-		offset.x *= playerController.Collisions.faceDir;
+		offset.x *= playerController.Collisions.FaceDir;
 	    Vector3 point = playerTransform.position + offset;
 
 		Debug.DrawLine(point + new Vector3(-hitCheckSize.x / 2, hitCheckSize.y / 2), point + new Vector3(hitCheckSize.x / 2, hitCheckSize.y / 2), Color.red);
@@ -48,7 +48,7 @@ public class Slash : DefaultAbility
 
 	private void CheckHit()
 	{
-		Vector3 offset = hitCheckOffset * playerController.Collisions.faceDir;
+		Vector3 offset = hitCheckOffset * playerController.Collisions.FaceDir;
 		Vector3 point = playerTransform.position + offset;
 
 		Collider2D[] hitables = Physics2D.OverlapBoxAll(point, hitCheckSize, 0, hitableMask);

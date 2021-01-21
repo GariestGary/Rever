@@ -25,6 +25,7 @@ public class Player : MonoCached
 	public Health PlayerHealth { get; private set; }
 	public bool IsUpdatingTurn { get; set; }
 	public bool IsInvulnerable => currentInvulnerabilityTime > 0;
+	public Vector2 position => new Vector2(t.position.x, t.position.y);
 
 	private Controller2D controller;
 	private InputManager input;
@@ -76,7 +77,7 @@ public class Player : MonoCached
 	}
 	public override void FixedTick()
 	{
-		controller.FixedUpdating();
+		controller.FixedInputUpdating();
 
 		for (int i = 0; i < abilities.Count; i++)
 		{
@@ -219,7 +220,7 @@ public class Player : MonoCached
 		}
 	}
 
-	public void TryTakeDamage(int amount, Side side)
+	public void TryTakeDamage(HitInfo info)
 	{
 		if (IsInvulnerable)
 		{
@@ -228,9 +229,9 @@ public class Player : MonoCached
 
 		//TODO: side handle
 		//TODO: hit effect
-		Debug.Log("player hitted at " + amount + " hp from " + side);
+		Debug.Log("player hitted at " + info.damage + " hp from " + info.side);
 
-		PlayerHealth.Hit(amount);
+		PlayerHealth.Hit(info.damage);
 		currentInvulnerabilityTime = invulnerabilityTime;
 	}
 

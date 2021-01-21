@@ -15,7 +15,6 @@ public class Bouncer : EnemyBase
     [SerializeField] protected float maxTime;
     [SerializeField] protected bool chasePlayer;
 
-    protected bool rightDirection = true;
     protected float currentInterval;
 
     public enum States
@@ -29,8 +28,6 @@ public class Bouncer : EnemyBase
 	public override void Rise()
 	{
 		base.Rise();
-
-        rightDirection = Random.Range(0.0f, 1.0f) > 0.5f;
 
         SetupFSM();
 	}
@@ -56,53 +53,18 @@ public class Bouncer : EnemyBase
     private void EnterBounce()
 	{
         //Set idle Animation
+        currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
 	}
 
     private void UpdateBounce(float d)
 	{
-        if(IsPlayerNoticed && chasePlayer)
+		if (currentInterval <= 0 && rbController.Collision.below)
 		{
-            currentInterval = 0;
-            fsm.ChangeState(States.Chase);
-		}
 
-        if(currentInterval <= 0 && IsGrounded())
-		{
-            if(rightDirection)
-		    {
-                if (IsDestinationAvailable(1) && !IsWallStuck())
-				{
-                    Jump(1);
-                    currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
-                }
-                else
-				{
-                    rightDirection = !rightDirection;
-				}
-		    }
-            else
-		    {
-                if(IsDestinationAvailable(-1) && !IsWallStuck())
-				{
-                    Jump(-1);
-                    currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
-                }
-                else
-				{
-                    rightDirection = !rightDirection;
-                }
-		    }
 		}
 
         currentInterval -= d;
 	}
-
-    protected void Jump(int dir)
-	{
-        if (dir >= 0) dir = 1; else dir = -1;
-
-        rb.velocity = new Vector2(jumpVelocityX * dir, jumpVelocityY);
-    }
 
     //CHASE
     private void EnterChase()
@@ -116,79 +78,82 @@ public class Bouncer : EnemyBase
 	}
 	#endregion
 
-    public void Test(States state)
+	protected void Jump(int dir)
 	{
+		if (dir >= 0) dir = 1; else dir = -1;
 
+		rbController.SetVelocity(new Vector2(jumpVelocityX * dir, jumpVelocityY));
 	}
 
+    //TODO: delete if doesn't need
     protected bool IsWallStuck()
 	{
-        Vector2 origin = new Vector2(rightDirection ? c.bounds.max.x : c.bounds.min.x, t.position.y);
+		Vector2 origin = new Vector2(facingRight ? c.bounds.max.x : c.bounds.min.x, t.position.y);
 
-        Debug.DrawRay(origin, new Vector2((rightDirection ? 1 : -1), 0), Color.red);
+		Debug.DrawRay(origin, new Vector2((facingRight ? 1 : -1), 0), Color.red);
 
-        return Physics2D.Raycast(origin, new Vector2((rightDirection ? 1 : -1), 0), c.bounds.size.x, groundLayer);
+		return Physics2D.Raycast(origin, new Vector2((facingRight ? 1 : -1), 0), c.bounds.size.x, groundLayer);
 	}
 
 	protected bool IsDestinationAvailable(int dir)
-    {
-        if (dir >= 0) dir = 1; else dir = -1;
+	{
+		if (dir >= 0) dir = 1; else dir = -1;
 
-        Vector3 prev = t.position;
-        Vector3 vel = new Vector3(jumpVelocityX * dir, jumpVelocityY, 0);
+		Vector3 prev = t.position;
+		Vector3 vel = new Vector3(jumpVelocityX * dir, jumpVelocityY, 0);
 
-        for (int i = 1; ; i++)
-        {
-            float time = timeStep * i;
+		for (int i = 1; ; i++)
+		{
+			float time = timeStep * i;
 
-            if (time > maxTime)
+			if (time > maxTime)
 			{
-                return false;
+				return false;
 			}
 
-            Vector3 pos = PlotTrajectoryAtTime(t.position, vel, time);
+			Vector3 pos = PlotTrajectoryAtTime(t.position, vel, time);
 
-            RaycastHit2D hit;
+			RaycastHit2D hit;
 
-            hit = Physics2D.Linecast(prev, pos, groundLayer);
+			hit = Physics2D.Linecast(prev, pos, groundLayer);
 
-            if (hit)
+			if (hit)
 			{
-                if(hit.transform.CompareTag("Platform"))
+				if (hit.transform.CompareTag("Platform"))
 				{
-                    return false;
+					return false;
 				}
 
-                float angle = Vector2.SignedAngle(Vector2.up, hit.normal);
+				float angle = Vector2.SignedAngle(Vector2.up, hit.normal);
 
-                if (angle == 0 && (IsOnSlope() || Mathf.Abs(t.position.y - hit.point.y) < maxGroundHeight))
+				if (angle == 0 && (rbController.Collision.climbingSlope || Mathf.Abs(t.position.y - hit.point.y) < maxGroundHeight))
 				{
-                    return true;
-                }
-                
-                if((angle < maxAllowedSlopeAngle && angle > 0) || (angle > -maxAllowedSlopeAngle && angle < 0))
-				{
-                    return true;
+					return true;
 				}
 
-                return false;
+				if ((angle < rbController.MaxSlopeAngle && angle > 0) || (angle > -rbController.MaxSlopeAngle && angle < 0))
+				{
+					return true;
+				}
+
+				return false;
 			}
 
-            Debug.DrawLine(prev, pos, Color.red, 1);
-            prev = pos;
-        }
-    }
+			Debug.DrawLine(prev, pos, Color.red, 1);
+			prev = pos;
+		}
+	}
 
-    protected Vector3 PlotTrajectoryAtTime(Vector3 start, Vector3 startVelocity, float time)
+	protected Vector2 PlotTrajectoryAtTime(Vector2 start, Vector2 startVelocity, float time)
     {
-        return start + startVelocity * time + Physics.gravity * time * time * (1 - rb.drag);
+        return start + startVelocity * time + Physics2D.gravity * time * time * (1 - rbController.RB.drag);
     }
 
 	private void OnTriggerStay2D(Collider2D collision)
 	{
-        if (collision.GetComponent<Player>())
+        if (collision.TryGetComponent(out Player player))
         {
-            TryHitPlayer();
+            player.TryTakeDamage(new HitInfo(damage, HitSide.CalculateHitSide(position, player.position)));
         }
     }
 }

@@ -13,13 +13,14 @@ public class FactoryWorker : EnemyBase
 	[SerializeField] private bool canJump;
 	[SerializeField] private float jumpVelocity;
 	[Space]			 
-	[SerializeField] private float walkSpeed;
-	[SerializeField] private float chasingSpeed;
+	[SerializeField] private float walkVelocity;
+	[SerializeField] private float chasingVelocity;
 	[Space]
 	[SerializeField] private Vector2 idleIntervals;
 	[SerializeField] private Vector2 walkIntervals;
 	[Space]
-	[SerializeField] private Collider2D attackCollider;
+	[SerializeField] private Vector2 attackBoxPosition;
+	[SerializeField] private Vector2 attackBoxSize;
 
 	private float currentInterval;
 
@@ -154,11 +155,60 @@ public class FactoryWorker : EnemyBase
 
 	#endregion
 
-	protected void IsGoingIntoWall()
+	public void AttackCheck()
 	{
-		for (int i = 0; i < 0; i++)
+		Collider2D collider = Physics2D.OverlapBox(position + attackBoxPosition, attackBoxSize, 0, playerLayer);
+
+		if(collider)
 		{
-			
+			collider.TryGetComponent(out Player player);
+
+			player.TryTakeDamage(new HitInfo(damage, HitSide.CalculateHitSide(position, player.position)));
 		}
 	}
+
+	private bool EdgeCheck()
+	{
+		RaycastHit2D hit = Physics2D.Raycast(edgeCheckTransform.position, Vector2.down, 500, groundLayer);
+
+		if(hit)
+		{
+			float angle = Vector2.Angle(Vector2.up, hit.normal);
+
+			if (angle == 0)
+			{
+				//if(collisions.climbingSlope)
+				//{
+				//	return false;
+				//}
+
+				if(Mathf.Abs(edgeCheckTransform.position.y - hit.point.y) > edgeCheckDistance)
+				{
+					return true;
+				}
+			}
+
+			//if(angle > 0 && angle < maxSlopeAngle)
+			//{
+			//	return false;
+			//}
+
+			return true;
+		}
+
+		return true;
+	}
+
+#if UNITY_EDITOR
+	protected override void OnDrawGizmosSelected()
+	{
+		if (!t) return;
+
+		base.OnDrawGizmosSelected();
+
+		Gizmos.color = Color.red;
+
+		Gizmos.DrawWireCube(t.position + new Vector3(attackBoxPosition.x, attackBoxPosition.y), new Vector3(attackBoxSize.x, attackBoxSize.y, 1));
+	}
+#endif
 }

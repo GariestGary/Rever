@@ -2,13 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using Zenject;
 
+[RequireComponent(typeof(RigidBody2DController))]
 public class EnemyBase : MonoCached
 {
 	[SerializeField] protected int groundCheckSteps;
 	[SerializeField] protected float playerSearchRadius;
 	[SerializeField] protected float playerChaseRadius;
-	[SerializeField] protected float maxAllowedSlopeAngle;
+	[Space]
+	[SerializeField] private int wallCheckSteps;
+	[Space]
 	[SerializeField] protected LayerMask playerLayer;
 	[SerializeField] protected LayerMask groundLayer;
 	[Space]
@@ -17,14 +21,17 @@ public class EnemyBase : MonoCached
 	public UnityEvent PlayerNoticedEvent;
 	public UnityEvent PlayerLostEvent;
 
-	protected Rigidbody2D rb;
 	protected Collider2D c;
+	protected RigidBody2DController rbController;
 	protected Animator anim;
-	protected Transform t;
 	protected Health health;
+	protected Player noticedPlayer;
+	protected Transform t;
+	protected float slopeAngle;
 	protected bool facingRight;
 
-	protected Player noticedPlayer;
+	protected GameManager game;
+
 
 	public Health SelfHealth => health;
 
@@ -33,15 +40,26 @@ public class EnemyBase : MonoCached
 	public bool IsPlayerOnRight => IsPlayerNoticed && (noticedPlayer.transform.position.x >= t.position.x);
 	public bool IsPlayerOnLeft => IsPlayerNoticed && (noticedPlayer.transform.position.x < t.position.x);
 
+	public Vector2 position => new Vector2(t.position.x, t.position.y);
+
 	public bool IsPlayerNoticed => noticedPlayer;
 
 	public bool IsPlayerInSearchRadius => CheckPlayerInRadius(playerSearchRadius);
 
 	public bool IsPlayerInChaseRadius => CheckPlayerInRadius(playerChaseRadius);
 
+	[Inject]
+	public void Construct(GameManager game)
+	{
+		this.game = game;
+	}
+
 	public override void Rise()
 	{
-		rb = GetComponent<Rigidbody2D>();
+		base.Rise();
+
+		t = transform;
+		rbController = GetComponent<RigidBody2DController>();
 		anim = GetComponent<Animator>();
 		t = transform;
 		c = GetComponent<Collider2D>();
@@ -50,50 +68,6 @@ public class EnemyBase : MonoCached
 	public override void Tick()
 	{
 
-	}
-
-	protected bool IsGrounded()
-	{
-		float spacing = c.bounds.size.x / (groundCheckSteps - 1);
-		Vector2 startPos = new Vector2(c.bounds.min.x, c.bounds.min.y);
-
-		for (int i = 0; i < groundCheckSteps; i++)
-		{
-			Vector2 origin = startPos + Vector2.right * spacing * i;
-
-			Debug.DrawRay(origin, Vector2.down * 1, Color.red);
-
-			RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, groundLayer);
-
-			if(hit)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	protected bool IsOnSlope()
-	{
-		float spacing = c.bounds.size.x / (groundCheckSteps - 1);
-		Vector2 startPos = new Vector2(c.bounds.min.x, c.bounds.min.y);
-
-		for (int i = 0; i < groundCheckSteps; i++)
-		{
-			Vector2 origin = startPos + Vector2.right * spacing * i;
-
-			Debug.DrawRay(origin, Vector2.down * 1, Color.red);
-
-			RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, groundLayer);
-
-			if (Vector2.Angle(Vector2.up, hit.normal) != 0)
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	public Vector2 GetDirectionToPlayer()
@@ -106,19 +80,31 @@ public class EnemyBase : MonoCached
 		return Vector2.zero;
 	}
 
-	public void TryHitPlayer()
+	protected bool IsWallAhead(float distance)
 	{
-		if(!IsPlayerNoticed)
+		float spacing = c.bounds.size.y / (wallCheckSteps - 1);
+		Vector2 startPos = new Vector2(facingRight ? c.bounds.max.x : c.bounds.min.x, c.bounds.min.y);
+
+		for (int i = 0; i < wallCheckSteps; i++)
 		{
-			return;
+			Vector2 origin = startPos + Vector2.up * spacing * i;
+
+			if (i == 0)
+			{
+				origin.y += 0.05f;
+			}
+
+			Debug.DrawRay(origin, (facingRight ? Vector2.right : Vector2.left) * distance, Color.red);
+
+			RaycastHit2D hit = Physics2D.Raycast(origin, facingRight ? Vector2.right : Vector2.left, distance, groundLayer);
+
+			if (hit)
+			{
+				return true;
+			}
 		}
 
-		if(noticedPlayer.IsInvulnerable)
-		{
-			return;
-		}
-
-		noticedPlayer.TryTakeDamage(damage, HitSide.CalculateHitSide(t.position, noticedPlayer.transform.position));
+		return false;
 	}
 
 	protected bool CheckPlayerInRadius(float radius)
@@ -145,12 +131,10 @@ public class EnemyBase : MonoCached
 			
 			return false;
 		}
-
-		
 	}
 
 #if UNITY_EDITOR
-	protected void OnDrawGizmosSelected()
+	protected virtual void OnDrawGizmosSelected()
 	{
 		Gizmos.color = Color.green;
 		Gizmos.DrawWireSphere(transform.position, playerSearchRadius);

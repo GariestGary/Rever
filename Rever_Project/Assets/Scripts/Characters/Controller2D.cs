@@ -4,24 +4,23 @@ using System;
 
 public class Controller2D : RaycastController
 {
-	[SerializeField] private float maxJumpHeight = 4;
-	[SerializeField] private float minJumpHeight = 1;
-	[SerializeField] private float timeToJumpApex = .4f;
-	[SerializeField] private float fallMultiplier = .2f;
+	[SerializeField] protected float maxJumpHeight = 4;
+	[SerializeField] protected float minJumpHeight = 1;
+	[SerializeField] protected float timeToJumpApex = .4f;
+	[SerializeField] protected float fallMultiplier = .2f;
 	[Space]
-	[SerializeField] private bool canJumpWall;
-	[SerializeField] private Vector2 wallJumpClimb;
-	[SerializeField] private Vector2 wallJumpOff;
-	[SerializeField] private Vector2 wallLeap;
+	[SerializeField] protected bool canJumpWall;
+	[SerializeField] protected Vector2 wallJumpClimb;
+	[SerializeField] protected Vector2 wallJumpOff;
+	[SerializeField] protected Vector2 wallLeap;
 	[Space]
-	[SerializeField] private float wallSlideSpeedMax = 3;
-	[SerializeField] private float wallStickTime = .25f;
+	[SerializeField] protected float wallSlideSpeedMax = 3;
+	[SerializeField] protected float wallStickTime = .25f;
 	[Space]
-	[SerializeField] private float accelerationTimeAirborne = .2f;
-	[SerializeField] private float accelerationTimeGrounded = .1f;
-	[SerializeField] private float moveSpeed = 6;
-	[SerializeField] private float maxSlopeAngle = 80;
-	[SerializeField] private float externalForcesDamp = 5;
+	[SerializeField] protected float accelerationTimeAirborne = .2f;
+	[SerializeField] protected float accelerationTimeGrounded = .1f;
+	[SerializeField] protected float moveSpeed = 6;
+	[SerializeField] protected float maxSlopeAngle = 80;
 
 	public Vector3 Velocity => velocity;
 	public bool WallSliding => wallSliding;
@@ -36,21 +35,21 @@ public class Controller2D : RaycastController
 	public bool UseHorizontalCollisions { get; set; } = true;
 	public bool UseVerticalCollisions { get; set; } = true;
 
-	private Vector3 velocity;
-	private Vector2 lastInputFacing;
-	private float gravity;
-	private float maxJumpVelocity;
-	private float minJumpVelocity;
-	private float velocityXSmoothing;
-	private float timeToWallUnstick;
+	protected Vector3 velocity;
+	protected Vector2 lastInputFacing;
+	protected float gravity;
+	protected float maxJumpVelocity;
+	protected float minJumpVelocity;
+	protected float velocityXSmoothing;
+	protected float timeToWallUnstick;
 
-	private bool wallSliding;
-	private int wallDirX;
+	protected bool wallSliding;
+	protected int wallDirX;
 
-	private Vector2 directionalInput;
-	private CollisionInfo collisions;
+	protected Vector2 directionalInput;
+	protected CollisionInfo collisions;
 
-	private Transform t;
+	protected Transform t;
 
 
 	public override void Rise()
@@ -62,13 +61,13 @@ public class Controller2D : RaycastController
 		ResetGravity();
 		CalculateJumpVelocities();
 
-		collisions.faceDir = 1;
-		lastInputFacing.x = collisions.faceDir;
+		collisions.FaceDir = 1;
+		lastInputFacing.x = collisions.FaceDir;
 	}
 
 	public void ChangeFacingDirection(int direction)
 	{
-		collisions.faceDir = direction;
+		collisions.FaceDir = direction;
 		lastInputFacing.x = direction;
 	}
 
@@ -88,7 +87,8 @@ public class Controller2D : RaycastController
 			directionalInput = Vector2.zero;
 		}
 	}
-	public void FixedUpdating()
+
+	public void FixedInputUpdating()
 	{
 		CalculateVelocity();
 		HandleWallSliding();
@@ -106,7 +106,6 @@ public class Controller2D : RaycastController
 				velocity.y = 0;
 			}
 		}
-
 	}
 
 	public void Move(Vector2 moveAmount, bool standingOnPlatform = false)
@@ -123,7 +122,7 @@ public class Controller2D : RaycastController
 
 		if (moveAmount.x != 0)
 		{
-			collisions.faceDir = (int)Mathf.Sign(moveAmount.x);
+			collisions.FaceDir = (int)Mathf.Sign(moveAmount.x);
 		}
 
 		HorizontalCollisions(ref moveAmount);
@@ -171,11 +170,11 @@ public class Controller2D : RaycastController
 		minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
 	}
 
-	private void HorizontalCollisions(ref Vector2 moveAmount) 
+	protected void HorizontalCollisions(ref Vector2 moveAmount) 
 	{
 		if (!UseHorizontalCollisions) return;
 
-		float directionX = collisions.faceDir;
+		float directionX = collisions.FaceDir;
 		float rayLength = Mathf.Abs (moveAmount.x) + skinWidth;
 
 		if (Mathf.Abs(moveAmount.x) < skinWidth) 
@@ -235,7 +234,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	private void VerticalCollisions(ref Vector2 moveAmount) 
+	protected void VerticalCollisions(ref Vector2 moveAmount) 
 	{
 		if (!UseVerticalCollisions) return;
 
@@ -286,15 +285,15 @@ public class Controller2D : RaycastController
 		if (collisions.climbingSlope)
 		{
 			rayLength = Mathf.Abs(moveAmount.x) + skinWidth;
-			Vector2 rayOrigin = ((collisions.faceDir == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight) + Vector2.up * moveAmount.y;
-			RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * collisions.faceDir, rayLength, collisionMask);
+			Vector2 rayOrigin = ((collisions.FaceDir == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight) + Vector2.up * moveAmount.y;
+			RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * collisions.FaceDir, rayLength, collisionMask);
 
 			if (hit)
 			{
 				float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
 				if (slopeAngle != collisions.slopeAngle)
 				{
-					moveAmount.x = (hit.distance - skinWidth) * collisions.faceDir;
+					moveAmount.x = (hit.distance - skinWidth) * collisions.FaceDir;
 					collisions.slopeAngle = slopeAngle;
 					collisions.slopeNormal = hit.normal;
 				}
@@ -302,7 +301,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	private void ClimbSlope(ref Vector2 moveAmount, float slopeAngle, Vector2 slopeNormal) 
+	protected void ClimbSlope(ref Vector2 moveAmount, float slopeAngle, Vector2 slopeNormal) 
 	{
 		float moveDistance = Mathf.Abs (moveAmount.x);
 		float climbmoveAmountY = Mathf.Sin (slopeAngle * Mathf.Deg2Rad) * moveDistance;
@@ -318,7 +317,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	private void DescendSlope(ref Vector2 moveAmount) 
+	protected void DescendSlope(ref Vector2 moveAmount) 
 	{
 		RaycastHit2D maxSlopeHitLeft = Physics2D.Raycast (raycastOrigins.bottomLeft, Vector2.down, Mathf.Abs (moveAmount.y) + skinWidth, collisionMask);
 		RaycastHit2D maxSlopeHitRight = Physics2D.Raycast (raycastOrigins.bottomRight, Vector2.down, Mathf.Abs (moveAmount.y) + skinWidth, collisionMask);
@@ -359,7 +358,7 @@ public class Controller2D : RaycastController
 		}
 	}
 
-	private void SlideDownMaxSlope(RaycastHit2D hit, ref Vector2 moveAmount) 
+	protected void SlideDownMaxSlope(RaycastHit2D hit, ref Vector2 moveAmount) 
 	{
 
 		if (hit) 
@@ -432,7 +431,7 @@ public class Controller2D : RaycastController
 		OnJump.Invoke();
 	}
 
-	private void HandleWallSliding()
+	protected void HandleWallSliding()
 	{
 		if (!canJumpWall) return;
 
@@ -470,7 +469,7 @@ public class Controller2D : RaycastController
 
 	}
 
-	private void CalculateVelocity()
+	protected void CalculateVelocity()
 	{
 		float targetVelocityX = directionalInput.x * moveSpeed;
 
@@ -479,7 +478,7 @@ public class Controller2D : RaycastController
 		velocity.y += (velocity.y < 0 ? fallMultiplier : 1) * gravity * Time.fixedDeltaTime;
 	}
 
-	private void ResetFallingThroughPlatform() 
+	protected void ResetFallingThroughPlatform() 
 	{
 		collisions.fallingThroughPlatform = false;
 	}
@@ -497,7 +496,26 @@ public class Controller2D : RaycastController
 		public float slopeAngle, slopeAngleOld;
 		public Vector2 slopeNormal;
 		public Vector2 moveAmountOld;
-		public int faceDir;
+
+		private int faceDir;
+
+		public int FaceDir 
+		{
+			get { return faceDir; }
+			set 
+			{
+				if (value >= 0)
+				{
+					faceDir = 1;
+				}
+				else
+				{
+					faceDir = -1;
+				}
+			}
+		}
+
+		public bool facingRight => FaceDir >= 0 ? true : false;
 		public bool fallingThroughPlatform;
 
 		public bool Colliding => above || below || left || right;

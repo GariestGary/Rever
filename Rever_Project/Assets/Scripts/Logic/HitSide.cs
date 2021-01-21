@@ -44,6 +44,18 @@ public class HitSide
     }
 }
 
+public class HitInfo
+{
+    public int damage;
+    public Side side;
+
+	public HitInfo(int damage, Side side)
+	{
+		this.damage = damage;
+		this.side = side;
+	}
+}
+
 public enum Side
 {
     TOP,
