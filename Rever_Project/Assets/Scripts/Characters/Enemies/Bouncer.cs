@@ -153,23 +153,20 @@ public class Bouncer : EnemyBase
 			{
 				if (hit.transform.CompareTag("Platform"))
 				{
-					Debug.Log("Platform hit");
 					return false;
 				}
 
-				Debug.DrawRay(hit.point, hit.normal, Color.green);
+				Debug.DrawRay(hit.point, hit.normal, Color.green, 1);
 
 				float angle = Vector2.Angle(Vector2.up, hit.normal);
 
 				if (angle == 0 && (rbController.Collision.climbingSlope || Mathf.Abs(t.position.y - hit.point.y) < maxGroundHeight))
 				{
-					Debug.Log("Flat hit");
 					return true;
 				}
 
 				if (angle < rbController.MaxSlopeAngle)
 				{
-					Debug.Log("Slope hit");
 					return true;
 				}
 

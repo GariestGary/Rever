@@ -1,0 +1,792 @@
+fileFormatVersion: 2
+guid: c0de9b020f2357d45a47f64e2330e9d7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8729581931116197591
+    second: test_flipbook_0
+  - first:
+      213: 7679790574675795290
+    second: test_flipbook_1
+  - first:
+      213: -1157951159074890453
+    second: test_flipbook_2
+  - first:
+      213: -8258426510342851081
+    second: test_flipbook_3
+  - first:
+      213: -7444914334363003955
+    second: test_flipbook_4
+  - first:
+      213: -6232358255619164810
+    second: test_flipbook_5
+  - first:
+      213: -166868514935710301
+    second: test_flipbook_6
+  - first:
+      213: -3739084559912416950
+    second: test_flipbook_7
+  - first:
+      213: -1948880435809526127
+    second: test_flipbook_8
+  - first:
+      213: -4103275462176802629
+    second: test_flipbook_9
+  - first:
+      213: -2364570485607403565
+    second: test_flipbook_10
+  - first:
+      213: 5329485360708867392
+    second: test_flipbook_11
+  - first:
+      213: -5023334638289851424
+    second: test_flipbook_12
+  - first:
+      213: 3647503807774784353
+    second: test_flipbook_13
+  - first:
+      213: -6485503927891605247
+    second: test_flipbook_14
+  - first:
+      213: -3959070002902649540
+    second: test_flipbook_15
+  - first:
+      213: -6356997581709099308
+    second: test_flipbook_16
+  - first:
+      213: 4433961913828048475
+    second: test_flipbook_17
+  - first:
+      213: 8022835726895753071
+    second: test_flipbook_18
+  - first:
+      213: 1680540656575816434
+    second: test_flipbook_19
+  - first:
+      213: 7110218801827201938
+    second: test_flipbook_20
+  - first:
+      213: -5767810481897893030
+    second: test_flipbook_21
+  - first:
+      213: 9179781453511144822
+    second: test_flipbook_22
+  - first:
+      213: 6671617606202715397
+    second: test_flipbook_23
+  - first:
+      213: 8421289817805313790
+    second: test_flipbook_24
+  - first:
+      213: -2029879996315334156
+    second: test_flipbook_25
+  - first:
+      213: 6038747182767494477
+    second: test_flipbook_26
+  - first:
+      213: -2429770847415672204
+    second: test_flipbook_27
+  - first:
+      213: -6005468312538131704
+    second: test_flipbook_28
+  - first:
+      213: -2328180341244740316
+    second: test_flipbook_29
+  - first:
+      213: -9062099684542548143
+    second: test_flipbook_30
+  - first:
+      213: 9049162977616754655
+    second: test_flipbook_31
+  externalObjects: {}
+  serializedVersion: 11
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: -1
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: -1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: test_flipbook_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d679d9d384b52970800000000000000
+      internalID: 8729581931116197591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_1
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5d91f0a6d8149a60800000000000000
+      internalID: 7679790574675795290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_2
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b2dd6105e812eefe0800000000000000
+      internalID: -1157951159074890453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_3
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7f5785708dc246d80800000000000000
+      internalID: -8258426510342851081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_4
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc354159bd95ea890800000000000000
+      internalID: -7444914334363003955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_5
+      rect:
+        serializedVersion: 2
+        x: 755
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 675b8dcdf273289a0800000000000000
+      internalID: -6232358255619164810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_6
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 454
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ad5f0348f92fadf0800000000000000
+      internalID: -166868514935710301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a49c54d376a1c1cc0800000000000000
+      internalID: -3739084559912416950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_8
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19e5dd9b19f24f4e0800000000000000
+      internalID: -1948880435809526127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_9
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bb8ff5d05bc3e07c0800000000000000
+      internalID: -4103275462176802629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_10
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3df6ffedbab5f2fd0800000000000000
+      internalID: -2364570485607403565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_11
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 04552b0e2b226f940800000000000000
+      internalID: 5329485360708867392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_12
+      rect:
+        serializedVersion: 2
+        x: 755
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0eb61d0e2c7894ab0800000000000000
+      internalID: -5023334638289851424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_13
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 303
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16bfc4b43698e9230800000000000000
+      internalID: 3647503807774784353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 109ce9c0a8cdef5a0800000000000000
+      internalID: -6485503927891605247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_15
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c353514fece8e09c0800000000000000
+      internalID: -3959070002902649540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_16
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4de3638516867c7a0800000000000000
+      internalID: -6356997581709099308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_17
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b5ef4555ed8988d30800000000000000
+      internalID: 4433961913828048475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_18
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f672fe83696d65f60800000000000000
+      internalID: 8022835726895753071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_19
+      rect:
+        serializedVersion: 2
+        x: 755
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f2adc1c2da725710800000000000000
+      internalID: 1680540656575816434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_20
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 152
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 293c63624529ca260800000000000000
+      internalID: 7110218801827201938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5393b60dee94ffa0800000000000000
+      internalID: -5767810481897893030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_22
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 675304c6892256f70800000000000000
+      internalID: 9179781453511144822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_23
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50d64f67dd8569c50800000000000000
+      internalID: 6671617606202715397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_24
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ef656eca87e6ed470800000000000000
+      internalID: 8421289817805313790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_25
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4f904fae5ea64d3e0800000000000000
+      internalID: -2029879996315334156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_26
+      rect:
+        serializedVersion: 2
+        x: 755
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d455f3d6190fdc350800000000000000
+      internalID: 6038747182767494477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: test_flipbook_27
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 1
+        width: 151
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 472603aa948b74ed0800000000000000
+      internalID: -2429770847415672204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 11378e76dfcec8a47bd8b3653838c1d9
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
