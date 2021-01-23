@@ -54,9 +54,11 @@ public class FactoryWorker : EnemyBase
 	public override void Rise()
 	{
 		base.Rise();
+	}
 
+	public override void Ready()
+	{
 		SetupFSM();
-		//attackCollider.attachedRigidbody.
 	}
 
 	public override void Tick()
@@ -67,7 +69,7 @@ public class FactoryWorker : EnemyBase
 		TurnHandle();
 	}
 
-	private void SetupFSM()
+	protected virtual void SetupFSM()
 	{
 		var states = new List<State<States>>();
 
@@ -98,7 +100,7 @@ public class FactoryWorker : EnemyBase
 	#region states
 
 	//IDLE=======================================================
-	private void EnterIdle()
+	protected virtual void EnterIdle()
 	{
 		if(IsPlayerInChaseRadius)
 		{
@@ -111,7 +113,7 @@ public class FactoryWorker : EnemyBase
 		controller.SetVelocity(Vector2.zero);
 	}
 
-	private void UpdateIdle(float d)
+	protected virtual void UpdateIdle(float d)
 	{
 		CheckGround();
 
@@ -133,7 +135,7 @@ public class FactoryWorker : EnemyBase
 	//TODO: Jump when player above, stay when cannot jump and player in center
 
 	//WALK=============================================================
-	private void EnterWalk()
+	protected virtual void EnterWalk()
 	{
 		anim.Play("Walk");
 		currentInterval = UnityEngine.Random.Range(walkIntervals.x, walkIntervals.y);
@@ -149,7 +151,7 @@ public class FactoryWorker : EnemyBase
 		}
 	}
 
-	private void UpdateWalk(float d)
+	protected virtual void UpdateWalk(float d)
 	{
 		CheckGround();
 
@@ -179,12 +181,12 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//FALLING===================================================
-	private void EnterFalling()
+	protected virtual void EnterFalling()
 	{
 		//anim.Play("Falling");
 	}
 
-	private void UpdateFalling(float d)
+	protected virtual void UpdateFalling(float d)
 	{
 		if(controller.Collision.below)
 		{
@@ -194,14 +196,14 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//CHASE==================================================
-	private void EnterChase()
+	protected virtual void EnterChase()
 	{
 		firstAttack = true;
 		anim.Play("Chase");
 		SetFacingDirection(game.CurrentPlayer.transform.position.x > t.position.x ? 1 : -1);
 	}
 
-	private void UpdateChase(float d)
+	protected virtual void UpdateChase(float d)
 	{
 		CheckGround();
 
@@ -246,12 +248,12 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//CHASE IDLE
-	private void EnterChaseIdle()
+	protected virtual void EnterChaseIdle()
 	{
 		
 	}
 
-	private void UpdateChaseIdle(float d)
+	protected virtual void UpdateChaseIdle(float d)
 	{
 		if(!IsPlayerInChaseRadius)
 		{
@@ -269,7 +271,7 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//ATTACK IDLE=============================================
-	private void EnterAttackIdle()
+	protected virtual void EnterAttackIdle()
 	{
 		anim.Play("Idle");
 
@@ -287,7 +289,7 @@ public class FactoryWorker : EnemyBase
 		
 	}
 
-	private void UpdateAttackIdle(float d)
+	protected virtual void UpdateAttackIdle(float d)
 	{
 		if(!IsPlayerInAttackRadius)
 		{
@@ -307,7 +309,7 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//ATTACK==============================================
-	private void EnterAttack()
+	protected virtual void EnterAttack()
 	{
 		anim.Play("Attack");
 		currentInterval = attackTime;
@@ -315,7 +317,7 @@ public class FactoryWorker : EnemyBase
 		AttackCheck();
 	}
 
-	private void UpdateAttack(float d)
+	protected virtual void UpdateAttack(float d)
 	{
 		if (currentInterval <= 0)
 		{
@@ -327,14 +329,14 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//NOTICE=============================================
-	private void EnterNotice()
+	protected virtual void EnterNotice()
 	{
 		FaceToPlayer();
 		anim.Play("Notice");
 		currentInterval = noticeTime;
 	}
 
-	private void UpdateNotice(float d)
+	protected virtual void UpdateNotice(float d)
 	{
 		if(currentInterval <= 0)
 		{
@@ -346,13 +348,13 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//DAMAGE==============================================
-	private void EnterDamage()
+	protected virtual void EnterDamage()
 	{
 		anim.Play("Damage");
 		currentInterval = damageTime;
 	}
 
-	private void UpdateDamage(float d)
+	protected virtual void UpdateDamage(float d)
 	{
 		if (currentInterval <= 0)
 		{
@@ -364,13 +366,13 @@ public class FactoryWorker : EnemyBase
 	}
 
 	//JUMP===============================================
-	private void EnterJump()
+	protected virtual void EnterJump()
 	{
 		Jump(FacingDirection, jumpVelocity);
 		currentInterval = jumpTime;
 	}
 
-	private void UpdateJump(float d)
+	protected virtual void UpdateJump(float d)
 	{
 		if (controller.Collision.above)
 		{

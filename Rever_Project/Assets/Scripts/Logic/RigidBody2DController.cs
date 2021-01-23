@@ -49,24 +49,18 @@ public class RigidBody2DController : MonoCached
 
 	public void SetFullFriction()
 	{
-		if (rb == null) return;
-
 		isFullFriction = true;
 		rb.sharedMaterial = fullFriction;
 	}
 
 	public void SetNoFriction()
 	{
-		if (rb == null) return;
-
 		isFullFriction = false;
 		rb.sharedMaterial = noFriction;
 	}
 
 	public void SetVelocity(Vector2 velocity)
 	{
-		if (rb == null) return;
-
 		rb.velocity = velocity;
 	}
 

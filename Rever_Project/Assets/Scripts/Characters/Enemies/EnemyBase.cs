@@ -27,6 +27,8 @@ public class EnemyBase : MonoCached
 	[Range(0.01f, 1)]
 	[SerializeField] protected float timeStep;
 	[SerializeField] protected float maxTime;
+	[Space]
+	[SerializeField] protected bool chasePlayer;
 
 	public UnityEvent PlayerNoticedEvent;
 	public UnityEvent PlayerLostEvent;

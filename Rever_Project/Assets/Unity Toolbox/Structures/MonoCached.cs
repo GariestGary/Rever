@@ -6,9 +6,17 @@ public class MonoCached : MonoBehaviour
 {
 
 	/// <summary>
-	/// Calls when spawned by pool manager
+	/// Calls when instantiated
 	/// </summary>
 	public virtual void Rise()
+	{
+
+	}
+
+	/// <summary>
+	/// Calls after Rise
+	/// </summary>
+	public virtual void Ready()
 	{
 
 	}

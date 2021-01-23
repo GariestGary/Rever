@@ -7,8 +7,6 @@ public class Bouncer : EnemyBase
 {
     [SerializeField] protected float jumpIntervalMin;
     [SerializeField] protected float jumpIntervalMax;
-    [Space]
-    [SerializeField] protected bool chasePlayer;
 
     protected float currentInterval;
 
@@ -23,8 +21,11 @@ public class Bouncer : EnemyBase
 	public override void Rise()
 	{
 		base.Rise();
+	}
 
-        SetupFSM();
+	public override void Ready()
+	{
+		SetupFSM();
 	}
 
 	public override void Tick()

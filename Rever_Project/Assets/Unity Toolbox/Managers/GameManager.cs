@@ -186,26 +186,12 @@ public class GameManager : ManagerBase, IExecute
 	{
 		currentLevelHandler = LevelHandler.Instance;
 
-		List<GameObject> sceneGO = scene.GetRootGameObjects().ToList();
-
-		sceneGO.ForEach(x => 
-		{
-			_container.InjectGameObject(x);
-			upd.RiseGameObject(x);
-		});
-
-		sceneGO.ForEach(x =>
-		{
-			upd.AddGameObject(x);
-		});
+		upd.PrepareAllGameObjects(scene.GetRootGameObjects());
 	}
 
 	private void RemoveUpdatesFromScene(Scene scene)
 	{
-		scene.GetRootGameObjects().ToList().ForEach(x =>
-		{
-			upd.RemoveGameObject(x);
-		});
+		upd.RemoveAllGameObjects(scene.GetRootGameObjects());
 
 		currentLevelHandler.Dispose();
 	}

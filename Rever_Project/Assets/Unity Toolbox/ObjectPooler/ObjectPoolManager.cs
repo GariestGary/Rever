@@ -77,7 +77,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 	{
         GameObject obj;
         obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
-        upd.RiseGameObject(obj);
+        upd.PrepareGameObject(obj);
         upd.AddGameObject(obj);
         return obj;
 	}
@@ -145,7 +145,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         poolObj.name = obj.name;
         poolObj.transform.SetParent(ObjectPoolParent);
 
-        upd.RiseGameObject(poolObj);
+        upd.PrepareGameObject(poolObj);
 
         poolObj.gameObject.SetActive(false);
         pool.AddLast(poolObj);
