@@ -1,6 +1,8 @@
 using RedBlueGames.LiteFSM;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 public class FactoryWorker : EnemyBase
@@ -10,19 +12,28 @@ public class FactoryWorker : EnemyBase
 	[Space]
 	[SerializeField] private float wallCheckDistance;
 	[Space]			 
-	[SerializeField] private bool canJump;
-	[SerializeField] private float jumpVelocity;
+	
 	[Space]			 
 	[SerializeField] private float walkVelocity;
 	[SerializeField] private float chasingVelocity;
+	[SerializeField] private float chaseIdleDistance;
 	[Space]
 	[SerializeField] private Vector2 idleIntervals;
 	[SerializeField] private Vector2 walkIntervals;
+	[SerializeField] private Vector2 attackIntervals;
 	[Space]
 	[SerializeField] private Vector2 attackBoxPosition;
 	[SerializeField] private Vector2 attackBoxSize;
+	[Space]
+	[SerializeField] private float firstAttackDelay;
+	[SerializeField] private float damageTime;
+	[SerializeField] private float attackTime;
+	[SerializeField] private float noticeTime;
+	[SerializeField] private float jumpTime;
 
 	private float currentInterval;
+	private bool needToChangeDirection;
+	private bool firstAttack;
 
 	public enum States
 	{
@@ -30,8 +41,12 @@ public class FactoryWorker : EnemyBase
 		Walk,
 		Notice,
 		Chase,
+		ChaseIdle,
 		Attack,
 		Damage,
+		AttackIdle,
+		Falling,
+		Jump,
 	}
 
 	private StateMachine<States> fsm;
@@ -49,6 +64,7 @@ public class FactoryWorker : EnemyBase
 		base.Tick();
 
 		fsm.Update(Time.deltaTime);
+		TurnHandle();
 	}
 
 	private void SetupFSM()
@@ -56,11 +72,15 @@ public class FactoryWorker : EnemyBase
 		var states = new List<State<States>>();
 
 		states.Add(new State<States>(States.Idle,	EnterIdle, null, UpdateIdle));
-		states.Add(new State<States>(States.Attack, EnterAttack, null, null));
+		states.Add(new State<States>(States.Attack, EnterAttack, null, UpdateAttack));
 		states.Add(new State<States>(States.Walk,	EnterWalk, null, UpdateWalk));
 		states.Add(new State<States>(States.Chase,	EnterChase, null, UpdateChase));
-		states.Add(new State<States>(States.Notice, EnterNotice, null, null));
-		states.Add(new State<States>(States.Damage, EnterDamage, null, null));
+		states.Add(new State<States>(States.Notice, EnterNotice, null, UpdateNotice));
+		states.Add(new State<States>(States.Damage, EnterDamage, null, UpdateDamage));
+		states.Add(new State<States>(States.AttackIdle, EnterAttackIdle, null, UpdateAttackIdle));
+		states.Add(new State<States>(States.Falling, EnterFalling, null, UpdateFalling));
+		states.Add(new State<States>(States.Jump,	EnterJump, null, UpdateJump));
+		states.Add(new State<States>(States.ChaseIdle, EnterChaseIdle, null, UpdateChaseIdle));
 
 		fsm = new StateMachine<States>(states.ToArray(), States.Idle);
 	}
@@ -77,87 +97,339 @@ public class FactoryWorker : EnemyBase
 
 	#region states
 
-	//IDLE
+	//IDLE=======================================================
 	private void EnterIdle()
 	{
+		if(IsPlayerInChaseRadius)
+		{
+			fsm.ChangeState(States.Chase);
+			return;
+		}
+
 		anim.Play("Idle");
-		currentInterval = Random.Range(idleIntervals.x, idleIntervals.y);
+		currentInterval = UnityEngine.Random.Range(idleIntervals.x, idleIntervals.y);
+		controller.SetVelocity(Vector2.zero);
 	}
 
 	private void UpdateIdle(float d)
 	{
-		if(IsPlayerInSearchRadius)
-		{
-			fsm.ChangeState(States.Notice);
-			currentInterval = 0;
-			return;
-		}
+		CheckGround();
 
-		if(currentInterval <= 0)
-		{
-			fsm.ChangeState(States.Walk);
-		}
-
-		currentInterval -= d;
-	}
-
-	//WALK
-	private void EnterWalk()
-	{
-		anim.Play("Walk");
-		currentInterval = Random.Range(walkIntervals.x, walkIntervals.y);
-	}
-
-	private void UpdateWalk(float d)
-	{
 		if (IsPlayerInSearchRadius)
 		{
 			fsm.ChangeState(States.Notice);
-			currentInterval = 0;
 			return;
 		}
 
 		if (currentInterval <= 0)
 		{
-			fsm.ChangeState(States.Idle);
+			fsm.ChangeState(States.Walk);
+			return;
 		}
 
 		currentInterval -= d;
 	}
 
-	//CHASE
+	//TODO: Jump when player above, stay when cannot jump and player in center
+
+	//WALK=============================================================
+	private void EnterWalk()
+	{
+		anim.Play("Walk");
+		currentInterval = UnityEngine.Random.Range(walkIntervals.x, walkIntervals.y);
+
+		if(needToChangeDirection)
+		{
+			SetFacingDirection(-FacingDirection);
+			needToChangeDirection = false;
+		}
+		else
+		{
+			SetFacingDirection(UnityEngine.Random.Range(-1, 1));
+		}
+	}
+
+	private void UpdateWalk(float d)
+	{
+		CheckGround();
+
+		if (IsPlayerInSearchRadius)
+		{
+			fsm.ChangeState(States.Notice);
+			return;
+		}
+
+		if (IsLedgeAhead() || IsWallAhead(c.bounds.size.x))
+		{
+			fsm.ChangeState(States.Idle);
+			needToChangeDirection = true;
+			return;
+		}
+
+		controller.Move(FacingDirection, walkVelocity);
+
+
+		if (currentInterval <= 0)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+
+		currentInterval -= d;
+	}
+
+	//FALLING===================================================
+	private void EnterFalling()
+	{
+		//anim.Play("Falling");
+	}
+
+	private void UpdateFalling(float d)
+	{
+		if(controller.Collision.below)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+	}
+
+	//CHASE==================================================
 	private void EnterChase()
 	{
+		firstAttack = true;
 		anim.Play("Chase");
+		SetFacingDirection(game.CurrentPlayer.transform.position.x > t.position.x ? 1 : -1);
 	}
 
 	private void UpdateChase(float d)
 	{
+		CheckGround();
 
+		if (!IsPlayerInChaseRadius)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+
+		if(IsPlayerInAttackRadius)
+		{
+			fsm.ChangeState(States.AttackIdle);
+			return;
+		}
+		else
+		{
+			if (Mathf.Abs(game.CurrentPlayer.transform.position.x - position.x) < chaseIdleDistance)
+			{
+				fsm.ChangeState(States.ChaseIdle);
+				return;
+			}
+		}
+
+		if(IsWallAhead(c.bounds.size.x * 2))
+		{
+			if(IsJumpDestinationAvailable(FacingDirection, jumpVelocity))
+			{
+				fsm.ChangeState(States.Jump);
+				return;
+			}
+		}
+
+		if (IsLedgeAhead() && IsJumpDestinationAvailable(FacingDirection, jumpVelocity))
+		{
+			fsm.ChangeState(States.Jump);
+			return;
+		}
+
+		FaceToPlayer();
+
+		controller.Move(FacingDirection, chasingVelocity);
 	}
 
-	//ATTACK
+	//CHASE IDLE
+	private void EnterChaseIdle()
+	{
+		
+	}
+
+	private void UpdateChaseIdle(float d)
+	{
+		if(!IsPlayerInChaseRadius)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+
+		if((Mathf.Abs(game.CurrentPlayer.transform.position.x - position.x) > chaseIdleDistance) || !IsLedgeAhead())
+		{
+			fsm.ChangeState(States.Chase);
+			return;
+		}
+
+		FaceToPlayer();
+	}
+
+	//ATTACK IDLE=============================================
+	private void EnterAttackIdle()
+	{
+		anim.Play("Idle");
+
+		controller.SetVelocity(Vector2.zero);
+
+		if(firstAttack)
+		{
+			currentInterval = firstAttackDelay;
+			firstAttack = false;
+		}
+		else
+		{
+			currentInterval = UnityEngine.Random.Range(attackIntervals.x, attackIntervals.y);
+		}
+		
+	}
+
+	private void UpdateAttackIdle(float d)
+	{
+		if(!IsPlayerInAttackRadius)
+		{
+			fsm.ChangeState(States.Chase);
+			return;
+		}
+
+		if(currentInterval <= 0)
+		{
+			fsm.ChangeState(States.Attack);
+			return;
+		}
+
+		FaceToPlayer();
+
+		currentInterval -= d;
+	}
+
+	//ATTACK==============================================
 	private void EnterAttack()
 	{
 		anim.Play("Attack");
+		currentInterval = attackTime;
+		controller.SetVelocity(Vector2.zero);
+		AttackCheck();
 	}
 
-	//ATTACK
+	private void UpdateAttack(float d)
+	{
+		if (currentInterval <= 0)
+		{
+			fsm.ChangeState(States.AttackIdle);
+			return;
+		}
+
+		currentInterval -= d;
+	}
+
+	//NOTICE=============================================
 	private void EnterNotice()
 	{
+		FaceToPlayer();
 		anim.Play("Notice");
+		currentInterval = noticeTime;
 	}
 
+	private void UpdateNotice(float d)
+	{
+		if(currentInterval <= 0)
+		{
+			fsm.ChangeState(States.Chase);
+			return;
+		}
+
+		currentInterval -= d;
+	}
+
+	//DAMAGE==============================================
 	private void EnterDamage()
 	{
 		anim.Play("Damage");
+		currentInterval = damageTime;
+	}
+
+	private void UpdateDamage(float d)
+	{
+		if (currentInterval <= 0)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+
+		currentInterval -= d;
+	}
+
+	//JUMP===============================================
+	private void EnterJump()
+	{
+		Jump(FacingDirection, jumpVelocity);
+		currentInterval = jumpTime;
+	}
+
+	private void UpdateJump(float d)
+	{
+		if (controller.Collision.above)
+		{
+			fsm.ChangeState(States.Falling);
+		}
+
+		if (currentInterval <= 0)
+		{
+			fsm.ChangeState(States.Falling);
+			return;
+		}
+
+		currentInterval -= d;
 	}
 
 	#endregion
 
+	private void CheckGround()
+	{
+		if(!controller.Collision.below)
+		{
+			fsm.ChangeState(States.Falling);
+		}
+	}
+
+	private void FaceToPlayer()
+	{
+		bool onRight = game.CurrentPlayer.transform.position.x >= t.position.x;
+
+		if (onRight && FacingDirection == -1)
+		{
+			SetFacingDirection(1);
+		}
+
+		if (!onRight && FacingDirection == 1)
+		{
+			SetFacingDirection(-1);
+		}
+	}
+
+	private void SetFacingDirection(int dir)
+	{
+		if (dir >= 0)
+		{
+			dir = 1;
+			FacingDirection = 1;
+		}
+		else
+		{
+			dir = -1;
+			FacingDirection = -1;
+		}
+
+		edgeCheckTransform.localPosition = new Vector3(Mathf.Abs(edgeCheckTransform.localPosition.x) * dir, edgeCheckTransform.localPosition.y, 0);
+	}
+
 	public void AttackCheck()
 	{
-		Collider2D collider = Physics2D.OverlapBox(position + attackBoxPosition, attackBoxSize, 0, playerLayer);
+		Collider2D collider = Physics2D.OverlapBox(position + attackBoxPosition * new Vector2(FacingDirection, 1), attackBoxSize, 0, playerLayer);
 
 		if(collider)
 		{
@@ -167,31 +439,36 @@ public class FactoryWorker : EnemyBase
 		}
 	}
 
-	private bool EdgeCheck()
+	private bool IsLedgeAhead()
 	{
 		RaycastHit2D hit = Physics2D.Raycast(edgeCheckTransform.position, Vector2.down, 500, groundLayer);
 
+		Debug.DrawRay(edgeCheckTransform.position, Vector2.down, Color.red);
+
 		if(hit)
 		{
+			Debug.DrawRay(edgeCheckTransform.position, edgeCheckTransform.position - new Vector3(hit.point.x, hit.point.y), Color.green);
+			Debug.DrawRay(hit.point, hit.normal, Color.green);
+
 			float angle = Vector2.Angle(Vector2.up, hit.normal);
 
 			if (angle == 0)
 			{
-				//if(collisions.climbingSlope)
-				//{
-				//	return false;
-				//}
+				if (controller.Collision.climbingSlope)
+				{
+					return false;
+				}
 
-				if(Mathf.Abs(edgeCheckTransform.position.y - hit.point.y) > edgeCheckDistance)
+				if (Mathf.Abs(edgeCheckTransform.position.y - hit.point.y) > edgeCheckDistance)
 				{
 					return true;
 				}
 			}
 
-			//if(angle > 0 && angle < maxSlopeAngle)
-			//{
-			//	return false;
-			//}
+			if (angle < controller.MaxSlopeAngle)
+			{
+				return false;
+			}
 
 			return true;
 		}
@@ -202,13 +479,11 @@ public class FactoryWorker : EnemyBase
 #if UNITY_EDITOR
 	protected override void OnDrawGizmosSelected()
 	{
-		if (!t) return;
-
 		base.OnDrawGizmosSelected();
 
 		Gizmos.color = Color.red;
 
-		Gizmos.DrawWireCube(t.position + new Vector3(attackBoxPosition.x, attackBoxPosition.y), new Vector3(attackBoxSize.x, attackBoxSize.y, 1));
+		Gizmos.DrawWireCube(transform.position + new Vector3(attackBoxPosition.x * FacingDirection, attackBoxPosition.y), new Vector3(attackBoxSize.x, attackBoxSize.y, 1));
 	}
 #endif
 }

@@ -186,12 +186,17 @@ public class GameManager : ManagerBase, IExecute
 	{
 		currentLevelHandler = LevelHandler.Instance;
 
-		scene.GetRootGameObjects().ToList().ForEach(x =>
+		List<GameObject> sceneGO = scene.GetRootGameObjects().ToList();
+
+		sceneGO.ForEach(x => 
 		{
 			_container.InjectGameObject(x);
-
-			upd.AddGameObject(x);
 			upd.RiseGameObject(x);
+		});
+
+		sceneGO.ForEach(x =>
+		{
+			upd.AddGameObject(x);
 		});
 	}
 

@@ -8,6 +8,9 @@ using UnityEditor;
 
 public class RigidBody2DController : MonoCached
 {
+	[SerializeField] protected PhysicsMaterial2D fullFriction;
+	[SerializeField] protected PhysicsMaterial2D noFriction;
+	[Space]
 	[SerializeField] private float maxSlopeAngle;
 
 	private const float skinWidth = 0.05f;
@@ -19,6 +22,8 @@ public class RigidBody2DController : MonoCached
 
 	private CollisionInfo collisionInfo;
 	private Vector2 moveVelocity;
+	private float prevAngle;
+	private bool isFullFriction;
 
 	public Rigidbody2D RB => rb;
 	public CollisionInfo Collision => collisionInfo;
@@ -42,8 +47,26 @@ public class RigidBody2DController : MonoCached
 		MaxSlopeHandle();
 	}
 
+	public void SetFullFriction()
+	{
+		if (rb == null) return;
+
+		isFullFriction = true;
+		rb.sharedMaterial = fullFriction;
+	}
+
+	public void SetNoFriction()
+	{
+		if (rb == null) return;
+
+		isFullFriction = false;
+		rb.sharedMaterial = noFriction;
+	}
+
 	public void SetVelocity(Vector2 velocity)
 	{
+		if (rb == null) return;
+
 		rb.velocity = velocity;
 	}
 
@@ -85,6 +108,11 @@ public class RigidBody2DController : MonoCached
 
 		float angle;
 
+		if(contacts.Count == 0)
+		{
+			SetNoFriction();
+		}
+
 		for (int i = 0; i < contacts.Count; i++)
 		{
 			//if contact lower
@@ -107,10 +135,31 @@ public class RigidBody2DController : MonoCached
 					{
 						collisionInfo.directionAlongSlope = -Vector2.Perpendicular(contacts[i].normal);
 					}
-
+					
 					collisionInfo.climbingSlope = true;
 					collisionInfo.slopeAngle = Mathf.Abs(angle);
 				}
+
+				if (rb.velocity != Vector2.zero && isFullFriction)
+				{
+					SetNoFriction();
+				}
+				else
+				{
+					if (angle != prevAngle)
+					{
+						if (angle != 0)
+						{
+							SetFullFriction();
+						}
+						else
+						{
+							SetNoFriction();
+						}
+					}
+				}
+
+				prevAngle = angle;
 			}
 
 			//if contact higher
