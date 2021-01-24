@@ -9,27 +9,28 @@ public class EnemyBase : MonoCached
 	[SerializeField] protected Transform graphicsRoot;
 	[SerializeField] protected Animator anim;
 	[Space]
-	[SerializeField] protected int groundCheckSteps;
-	[SerializeField] protected float playerSearchRadius;
-	[SerializeField] protected float playerChaseRadius;
-	[SerializeField] protected float playerAttackRadius;
+	[SerializeField] protected float playerSearchRadius = 5;
+	[SerializeField] protected float playerChaseRadius = 7;
+	[SerializeField] protected float playerAttackRadius = 2;
 	[Space]
-	[SerializeField] private int wallCheckSteps;
+	[SerializeField] protected int wallCheckSteps = 3;
 	[Space]
 	[SerializeField] protected LayerMask playerLayer;
 	[SerializeField] protected LayerMask groundLayer;
 	[Space]
-	[SerializeField] protected int damage;
+	[SerializeField] protected int damage = 1;
+	[SerializeField] protected Vector2 attackBoxPosition;
+	[SerializeField] protected Vector2 attackBoxSize;
 	[Space]
-	[SerializeField] private bool canJump;
+	[SerializeField] protected bool canJump = true;
 	[SerializeField] protected Vector2 jumpVelocity;
-	[SerializeField] protected float maxGroundHeight;
+	[SerializeField] protected float maxGroundHeight = 1;
 	[Range(0.01f, 1)]
-	[SerializeField] protected float timeStep;
-	[SerializeField] protected float maxTime;
+	[SerializeField] protected float timeStep = 0.01f;
+	[SerializeField] protected float maxTime = 2;
 	[Space]
 	[SerializeField] protected bool chasePlayer;
-
+	[Space]
 	public UnityEvent PlayerNoticedEvent;
 	public UnityEvent PlayerLostEvent;
 
@@ -112,6 +113,35 @@ public class EnemyBase : MonoCached
 		}
 	}
 
+	protected void FaceToPlayer()
+	{
+		bool onRight = game.CurrentPlayer.transform.position.x >= t.position.x;
+
+		if (onRight && FacingDirection == -1)
+		{
+			SetFacingDirection(1);
+		}
+
+		if (!onRight && FacingDirection == 1)
+		{
+			SetFacingDirection(-1);
+		}
+	}
+
+	protected virtual void SetFacingDirection(int dir)
+	{
+		if (dir >= 0)
+		{
+			dir = 1;
+			FacingDirection = 1;
+		}
+		else
+		{
+			dir = -1;
+			FacingDirection = -1;
+		}
+	}
+
 	protected void Jump(int dir, Vector2 vel)
 	{
 		if (!canJump) return;
@@ -181,11 +211,26 @@ public class EnemyBase : MonoCached
 		{
 			if(IsPlayerNoticed)
 			{
-				PlayerLostEvent?.Invoke();
 				noticedPlayer = null;
+				PlayerLostEvent?.Invoke();
 			}
 			
 			return false;
+		}
+	}
+
+	public void AttackCheck()
+	{
+		Collider2D collider = Physics2D.OverlapBox(position + attackBoxPosition * new Vector2(FacingDirection, 1), attackBoxSize, 0, playerLayer);
+
+		if (collider)
+		{
+			collider.TryGetComponent(out Player player);
+
+			if(player)
+			{
+				player.TryTakeDamage(new HitInfo(damage, t.position));
+			}
 		}
 	}
 
@@ -262,6 +307,9 @@ public class EnemyBase : MonoCached
 
 		Gizmos.color = Color.blue;
 		Gizmos.DrawWireSphere(transform.position, playerAttackRadius);
+
+		Gizmos.color = Color.red;
+		Gizmos.DrawWireCube(transform.position + new Vector3(attackBoxPosition.x * FacingDirection, attackBoxPosition.y), new Vector3(attackBoxSize.x, attackBoxSize.y, 1));
 	}
 #endif
 }

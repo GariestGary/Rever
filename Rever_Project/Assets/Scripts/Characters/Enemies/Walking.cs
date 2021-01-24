@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 
-public class FactoryWorker : EnemyBase
+public class Walking : EnemyBase
 {
 	[SerializeField] private Transform edgeCheckTransform;
 	[SerializeField] private float edgeCheckDistance;
 	[Space]
 	[SerializeField] private float wallCheckDistance;
-	[Space]			 
-	
 	[Space]			 
 	[SerializeField] private float walkVelocity;
 	[SerializeField] private float chasingVelocity;
@@ -21,9 +19,6 @@ public class FactoryWorker : EnemyBase
 	[SerializeField] private Vector2 idleIntervals;
 	[SerializeField] private Vector2 walkIntervals;
 	[SerializeField] private Vector2 attackIntervals;
-	[Space]
-	[SerializeField] private Vector2 attackBoxPosition;
-	[SerializeField] private Vector2 attackBoxSize;
 	[Space]
 	[SerializeField] private float firstAttackDelay;
 	[SerializeField] private float damageTime;
@@ -398,47 +393,11 @@ public class FactoryWorker : EnemyBase
 		}
 	}
 
-	private void FaceToPlayer()
+	protected override void SetFacingDirection(int dir)
 	{
-		bool onRight = game.CurrentPlayer.transform.position.x >= t.position.x;
-
-		if (onRight && FacingDirection == -1)
-		{
-			SetFacingDirection(1);
-		}
-
-		if (!onRight && FacingDirection == 1)
-		{
-			SetFacingDirection(-1);
-		}
-	}
-
-	private void SetFacingDirection(int dir)
-	{
-		if (dir >= 0)
-		{
-			dir = 1;
-			FacingDirection = 1;
-		}
-		else
-		{
-			dir = -1;
-			FacingDirection = -1;
-		}
+		base.SetFacingDirection(dir);
 
 		edgeCheckTransform.localPosition = new Vector3(Mathf.Abs(edgeCheckTransform.localPosition.x) * dir, edgeCheckTransform.localPosition.y, 0);
-	}
-
-	public void AttackCheck()
-	{
-		Collider2D collider = Physics2D.OverlapBox(position + attackBoxPosition * new Vector2(FacingDirection, 1), attackBoxSize, 0, playerLayer);
-
-		if(collider)
-		{
-			collider.TryGetComponent(out Player player);
-
-			player.TryTakeDamage(new HitInfo(damage, t.position));
-		}
 	}
 
 	private bool IsLedgeAhead()
@@ -477,15 +436,4 @@ public class FactoryWorker : EnemyBase
 
 		return true;
 	}
-
-#if UNITY_EDITOR
-	protected override void OnDrawGizmosSelected()
-	{
-		base.OnDrawGizmosSelected();
-
-		Gizmos.color = Color.red;
-
-		Gizmos.DrawWireCube(transform.position + new Vector3(attackBoxPosition.x * FacingDirection, attackBoxPosition.y), new Vector3(attackBoxSize.x, attackBoxSize.y, 1));
-	}
-#endif
 }

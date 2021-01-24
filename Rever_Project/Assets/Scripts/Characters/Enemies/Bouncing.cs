@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bouncer : EnemyBase
+public class Bouncing : EnemyBase
 {
     [SerializeField] protected float jumpIntervalMin;
     [SerializeField] protected float jumpIntervalMax;
@@ -46,19 +46,21 @@ public class Bouncer : EnemyBase
 	#region states
 
     //BOUNCE
-    private void EnterBounce()
+    protected virtual void EnterBounce()
 	{
         //Set idle Animation
         currentInterval = Random.Range(jumpIntervalMin, jumpIntervalMax);
 	}
 
-    private void UpdateBounce(float d)
+    protected virtual void UpdateBounce(float d)
 	{
 		if (IsPlayerNoticed && chasePlayer)
 		{
 			currentInterval = 0;
 			fsm.ChangeState(States.Chase);
 		}
+
+		AttackCheck();
 
 		if (currentInterval <= 0 && controller.Collision.below)
 		{
@@ -92,12 +94,12 @@ public class Bouncer : EnemyBase
 	}
 
     //CHASE
-    private void EnterChase()
+    protected virtual void EnterChase()
 	{
         
     }
 
-    private void UpdateChase(float d)
+    protected virtual void UpdateChase(float d)
 	{
 
 	}
@@ -117,7 +119,7 @@ public class Bouncer : EnemyBase
 
 	
 
-	private void OnTriggerStay2D(Collider2D collision)
+	protected virtual void OnTriggerStay2D(Collider2D collision)
 	{
         if (collision.TryGetComponent(out Player player))
         {

@@ -8,9 +8,11 @@ using UnityEditor;
 
 public class RigidBody2DController : MonoCached
 {
+	[SerializeField] private bool automaticMaterialChoose;
 	[SerializeField] protected PhysicsMaterial2D fullFriction;
 	[SerializeField] protected PhysicsMaterial2D noFriction;
 	[Space]
+	[SerializeField] private bool useSlopeHandle;
 	[SerializeField] private float maxSlopeAngle;
 
 	private const float skinWidth = 0.05f;
@@ -44,7 +46,10 @@ public class RigidBody2DController : MonoCached
 
 	public override void FixedTick()
 	{
-		MaxSlopeHandle();
+		if(useSlopeHandle)
+		{
+			MaxSlopeHandle();
+		}
 	}
 
 	public void SetFullFriction()
@@ -119,36 +124,42 @@ public class RigidBody2DController : MonoCached
 					collisionInfo.below = true;
 				}
 
-				if(angle != 0 && Mathf.Abs(angle) < 90)
+				if(useSlopeHandle)
 				{
-					if(angle > 0)
+					if(angle != 0 && Mathf.Abs(angle) < 90)
 					{
-						collisionInfo.directionAlongSlope = -Vector2.Perpendicular(contacts[i].normal);
-					}
-					else
-					{
-						collisionInfo.directionAlongSlope = -Vector2.Perpendicular(contacts[i].normal);
-					}
-					
-					collisionInfo.climbingSlope = true;
-					collisionInfo.slopeAngle = Mathf.Abs(angle);
-				}
-
-				if (rb.velocity != Vector2.zero && isFullFriction)
-				{
-					SetNoFriction();
-				}
-				else
-				{
-					if (angle != prevAngle)
-					{
-						if (angle != 0)
+						if(angle > 0)
 						{
-							SetFullFriction();
+							collisionInfo.directionAlongSlope = -Vector2.Perpendicular(contacts[i].normal);
 						}
 						else
 						{
-							SetNoFriction();
+							collisionInfo.directionAlongSlope = -Vector2.Perpendicular(contacts[i].normal);
+						}
+					
+						collisionInfo.climbingSlope = true;
+						collisionInfo.slopeAngle = Mathf.Abs(angle);
+					}
+				}
+
+				if(automaticMaterialChoose)
+				{
+					if (rb.velocity != Vector2.zero && isFullFriction)
+					{
+						SetNoFriction();
+					}
+					else
+					{
+						if (angle != prevAngle)
+						{
+							if (angle != 0)
+							{
+								SetFullFriction();
+							}
+							else
+							{
+								SetNoFriction();
+							}
 						}
 					}
 				}
