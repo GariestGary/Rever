@@ -13,7 +13,7 @@ public class PlatformController : RaycastController
 	[Range(0, 2)]
 	[SerializeField] private float easeAmount;
 
-	private Vector3[] globalWaypoints;
+	private Vector3[] globalWaypoints = new Vector3[0];
 	private float percentBetweenWaypoints;
 	private float nextMoveTime;
 	private int fromWaypointIndex;

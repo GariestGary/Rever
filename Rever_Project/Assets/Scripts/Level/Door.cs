@@ -30,12 +30,12 @@ public class Door : Saveable
 
 		if(openAtStart)
 		{
-			doorGraphics.position = transform.position + openedPosition;
+			doorGraphics.localPosition = openedPosition;
 			opened = true;
 		}
 		else
 		{
-			doorGraphics.position = transform.position + closedPosition;
+			doorGraphics.localPosition = closedPosition;
 			opened = false;
 		}
 	}

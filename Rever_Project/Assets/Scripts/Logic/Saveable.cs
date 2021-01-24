@@ -1,3 +1,4 @@
+using NaughtyAttributes;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -7,6 +8,7 @@ using UnityEngine;
 public class Saveable : MonoCached, ISaveable
 {
 	[SerializeField] protected string id;
+	[Button] public void GenerateNewID() => GenerateID();
 
 	public string ID => id;
 
@@ -27,8 +29,7 @@ public class Saveable : MonoCached, ISaveable
 	{
 		
 	}
-
-	[ContextMenu("Generate ID")]
+	
 	private void GenerateID()
 	{
 		id = Guid.NewGuid().ToString();

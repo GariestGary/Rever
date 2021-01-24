@@ -160,7 +160,7 @@ public class SaveManager : ManagerBase, IExecute
 
 	private void SaveJsonFile(string data)
 	{
-		string filePath = saveFolder + "\\" + saveFileName + ".txt";
+		string filePath = saveFolder + "\\" + saveFileName + ".snt";
 
 		if (!File.Exists(filePath))
 		{
@@ -172,7 +172,7 @@ public class SaveManager : ManagerBase, IExecute
 
 	private string LoadJsonFile()
 	{
-		string filePath = saveFolder + "\\" + saveFileName + ".txt";
+		string filePath = saveFolder + "\\" + saveFileName + ".snt";
 
 		if(!File.Exists(filePath))
 		{

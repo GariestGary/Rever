@@ -13,6 +13,7 @@ using Cinemachine;
 [CreateAssetMenu(menuName = "Toolbox/Managers/Game Manager", fileName = "Game")]
 public class GameManager : ManagerBase, IExecute
 {
+	[SerializeField] private bool loadLevelsData;
 	[SerializeField] private string lookCameraTag;
 	[SerializeField] private string playerPrefabName;
 	[SerializeField] private string playerTag;
@@ -107,7 +108,10 @@ public class GameManager : ManagerBase, IExecute
 
 		currentLevelHandler.SetupLevel(instantiatedPlayer.transform, data.nextSpawnPointTag);
 
-		save.Load();
+		if(loadLevelsData)
+		{
+			save.Load();
+		}
 
 		Toolbox.Instance.StartCoroutine(SceneOpenedDelay(data.direction));
 	}

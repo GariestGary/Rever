@@ -30,6 +30,12 @@ public class LookCamera : MonoCached
 		Debug.Log("Target set to camera");
 	}
 
+	public void ResetCamera()
+	{
+		DOTween.To(() => cam.m_Lens.OrthographicSize, x => cam.m_Lens.OrthographicSize = x, defaultOrtSize, sizeChangeDuration).SetEase(Ease.InOutCubic);
+		cam.GetComponent<CinemachineConfiner>().m_BoundingShape2D = null;
+	}
+
 	public void SetConfiner(Collider2D bounds)
 	{
 		cam.GetComponent<CinemachineConfiner>().m_BoundingShape2D = bounds;

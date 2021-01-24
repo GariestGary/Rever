@@ -32,7 +32,7 @@ public class UpdateManager : ManagerBase, IExecute
 	{
 		if(!monos.Contains(monoToRemove))
 		{
-			Debug.LogWarning("Mono " + monoToRemove + " don't updates");
+			Debug.LogWarning("Mono " + monoToRemove + " doesn't updates");
 			return;
 		}
 

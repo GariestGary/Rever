@@ -112,6 +112,7 @@ public class InputManager : ManagerBase, IExecute, ISceneChange
 		{
 			disabledByGameplay = byGameplay;
 			controls?.Default.Disable();
+			MoveInput = Vector2.zero;
 		}
 	}
 

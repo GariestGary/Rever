@@ -10,6 +10,8 @@ public class CameraConfinerComponent : MonoCached
 
     private GameManager game;
 
+    public void ResetCamera() => game.MainCamera.ResetCamera();
+
     [Inject]
     public void Constructor(GameManager game)
 	{
