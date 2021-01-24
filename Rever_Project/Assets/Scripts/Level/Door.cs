@@ -2,45 +2,80 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using NaughtyAttributes;
 
 public class Door : Saveable
 {
-	[SerializeField] private GameObject doorCollider;
+	[BoxGroup("Open")][SerializeField] private Vector3 openedPosition;
+	[BoxGroup("Open")][SerializeField] private float openDuration;
+	[BoxGroup("Open")][SerializeField][CurveRange(0, 0, 1, 1)] private AnimationCurve openEase;
+	[BoxGroup("Close")][SerializeField] private Vector3 closedPosition;
+	[BoxGroup("Close")][SerializeField] private float closeDuration;
+	[BoxGroup("Close")][SerializeField][CurveRange(0, 0, 1, 1)] private AnimationCurve closeEase;
+	[Space]
+	[SerializeField] private Transform doorGraphics;
+	[SerializeField] private Collider2D doorCollider;
     [SerializeField] private MonoBehaviour switcher;
+	[SerializeField] private bool openAtStart;
 
 	private bool opened;
+	private bool moving;
 
 	public bool Opened => opened;
 
 	public override void Rise()
 	{
 		(switcher as ISwitcher).OnEnable += OpenDoor;
-	}
 
-	//TODO: visuals for opening and closing
+		if(openAtStart)
+		{
+			doorGraphics.position = transform.position + openedPosition;
+			opened = true;
+		}
+		else
+		{
+			doorGraphics.position = transform.position + closedPosition;
+			opened = false;
+		}
+	}
 
 	public void OpenDoor()
 	{
-		if(opened)
+		if(opened || moving)
 		{
 			return;
 		}
 
-		doorCollider.SetActive(false);
-		opened = true;
+		moving = true;
+
+		doorGraphics.DOLocalMove(openedPosition, openDuration).SetEase(openEase).OnComplete(() => 
+		{
+			doorCollider.enabled = false;
+			opened = true;
+			moving = false;
+		});
+
 	}
 
 	public void CloseDoor()
 	{
-		if(!opened)
+		if(!opened || moving)
 		{
 			return;
 		}
 
-		doorCollider.SetActive(true);
+		doorCollider.enabled = true;
 		opened = false;
+		moving = true;
+
+		doorGraphics.DOLocalMove(closedPosition, closeDuration).SetEase(closeEase).OnComplete(() =>
+		{
+			moving = false;
+		});
 	}
 
+	#region saving
 	public override object CaptureState()
 	{
 		return opened;
@@ -59,9 +94,19 @@ public class Door : Saveable
 			CloseDoor();
 		}
 	}
+	#endregion
 
 	private void OnDisable()
 	{
 		(switcher as ISwitcher).OnEnable -= OpenDoor;
 	}
+
+#if UNITY_EDITOR
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = Color.green;
+		Gizmos.DrawWireSphere(transform.position + openedPosition, 0.1f);
+		Gizmos.DrawWireSphere(transform.position + closedPosition, 0.1f);
+	}
+#endif
 }
