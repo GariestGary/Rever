@@ -15,6 +15,7 @@ public class GameManager : ManagerBase, IExecute
 {
 	[SerializeField] private string lookCameraTag;
 	[SerializeField] private string playerPrefabName;
+	[SerializeField] private string playerTag;
 	[SerializeField] private LevelChangeData initLevelData;
 	[SerializeField] private string LevelsFolderPath;
 	[SerializeField] private float openedSceneDelay;
@@ -44,7 +45,8 @@ public class GameManager : ManagerBase, IExecute
 
 	public string CurrentSceneName => currentSceneName;
 	public string MainSceneName => "Main";
-	public Transform CameraTransform => cam.transform;
+	public string PlayerTag => playerTag;
+	public LookCamera MainCamera => cam;
 	public LevelHandler CurrentLevelHandler => currentLevelHandler;
 	public Player CurrentPlayer => currentPlayer;
 	public Inventory CurrentInventory => currentInventory;
@@ -75,11 +77,6 @@ public class GameManager : ManagerBase, IExecute
 		{
 			LoadLevel(initLevelData);
 		}
-	}
-
-	public void SetCameraConfiner(Collider2D bounds)
-	{
-		cam.GetComponent<CinemachineConfiner>().m_BoundingShape2D = bounds;
 	}
 
 	public void ResetPlayer()

@@ -9,6 +9,6 @@ public class ConfinerSetup : MonoCached
 	public override void Rise()
 	{
 		if (setConfiner)
-			Toolbox.GetManager<GameManager>().SetCameraConfiner(GetComponent<PolygonCollider2D>());
+			Toolbox.GetManager<GameManager>().MainCamera.SetConfiner(GetComponent<PolygonCollider2D>());
 	}
 }
