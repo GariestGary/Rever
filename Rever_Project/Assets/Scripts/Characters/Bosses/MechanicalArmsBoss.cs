@@ -19,7 +19,6 @@ public class MechanicalArmsBoss : Boss
 	[SerializeField] private float noiseInfluence;
 	[SerializeField] private float leftXMaxPosition;
 	[SerializeField] private float rightXMaxPosition;
-	[SerializeField] private float followSmooth;
 	[Range(0, 25)]
 	[SerializeField] private float xFollowPositionCalibrate;
 	[InfoBox("Correspond each arm positions's position in list to state position in enum")]
@@ -32,6 +31,7 @@ public class MechanicalArmsBoss : Boss
 	[SerializeField] private List<States> attackStatesToChoose;
 
 	private float currentTimer;
+	private float followSmooth;
 	private Vector3 wholeTargetPosition;
 	private Vector3 initLeftArmTargetPos;
 	private Vector3 initRightArmTargetPos;
@@ -48,6 +48,7 @@ public class MechanicalArmsBoss : Boss
 		public float minDuration;
 		public float maxDuration;
 		public float additionalTime;
+		public float followSmooth;
 		public Ease ease = Ease.InQuad;
 		[InfoBox("X for left arm, Y for right arm")]
 		[Space]
@@ -85,6 +86,7 @@ public class MechanicalArmsBoss : Boss
 		AttackOneHand, 
 		SlideToSide, 
 		ChargeSlide, 
+		SlideAttack,
 		SlideSaw, 
 		SlideToCenter, 
 		Death, 
@@ -112,6 +114,11 @@ public class MechanicalArmsBoss : Boss
 		SetupFSM();
 	}
 
+	public void SetState(int state)
+	{
+		fsm.ChangeState((States)state);
+	}
+
 	private void DoArmsMove(States state, bool overrideLeftX = false, float leftX = 0, bool overrideRightX = false, float rightX = 0)
 	{
 		currentPosition = positions.Where(x => x.state == state).FirstOrDefault();
@@ -136,6 +143,8 @@ public class MechanicalArmsBoss : Boss
 		//rightArmTarget.DOShakePosition(currentPosition.duration, currentPosition.noiseInfluence.y * noiseInfluence);
 
 		currentTimer = currentPosition.minDuration + currentPosition.additionalTime;
+		Debug.Log(state + " " + currentPosition.followSmooth);
+		followSmooth = currentPosition.followSmooth;
 	}
 
 	public override void Tick()
@@ -168,16 +177,17 @@ public class MechanicalArmsBoss : Boss
 		states.Add(new State<States>(States.SlideToSide, EnterSlideToSide, null, UpdateSlideToSide));
 		states.Add(new State<States>(States.ChargeSlide, EnterChargeSlide, null, UpdateChargeSlide));
 		states.Add(new State<States>(States.SlideSaw, EnterSlideSaw, null, UpdateSlideSaw));
+		states.Add(new State<States>(States.SlideAttack, EnterSlideAttack, null, UpdateSlideAttack)); 
 		states.Add(new State<States>(States.SlideToCenter, EnterSlideToCenter, null, UpdateSlideToCenter));
 		states.Add(new State<States>(States.Death, EnterDeath, null, UpdateDeath));
 		states.Add(new State<States>(States.Sleep, EnterSleep, null, UpdateSleep));
-		states.Add(new State<States>(States.Awakening, EnterAwakening, null, UpdateAwakening));
+		states.Add(new State<States>(States.Awakening, EnterAwakening, ExitAwakening, UpdateAwakening));
 		states.Add(new State<States>(States.ChargeAttackBothHand, EnterChargeAttackBothHand, null, UpdateChargeAttackBothHand));
 		states.Add(new State<States>(States.AttackBothHand, EnterAttackBothHand, null, UpdateAttackBothHand));
 		states.Add(new State<States>(States.SlideBothHandsTogether, EnterSlideBothHandsTogether, null, UpdateSlideBothHandsTogether));
 		states.Add(new State<States>(States.Dead, EnterDead, null, UpdateDead));
 	
-		fsm = new StateMachine<States>(states.ToArray(), States.Idle);
+		fsm = new StateMachine<States>(states.ToArray(), States.Sleep);
 	}
 
 	#region states
@@ -193,9 +203,8 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.FollowPlayer);
+			return;
 		}
-
-		wholeTargetPosition = GetPlayerDelta();
 
 		currentTimer -= d;
 	}
@@ -211,7 +220,10 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.Idle);
+			return;
 		}
+
+		currentTimer -= d;
 	}
 
 	//FOLLOWPLAYER========================================================
@@ -241,6 +253,7 @@ public class MechanicalArmsBoss : Boss
 		if (currentTimer <= 0)
 		{
 			fsm.ChangeState(States.AttackOneHand);
+			return;
 		}
 
 		wholeTargetPosition = GetPlayerDelta();
@@ -251,7 +264,7 @@ public class MechanicalArmsBoss : Boss
 	//ATTACKONEHAND========================================================
 	protected virtual void EnterAttackOneHand()
 	{
-		DoArmsMove(fsm.CurrentStateID);
+		DoArmsMove(States.AttackOneHand);//, true, game.CurrentPlayer.transform.position.x - leftArmTargetParent.position.x);
 	}
 
 	protected virtual void UpdateAttackOneHand(float d)
@@ -259,6 +272,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.FollowPlayer);
+			return;
 		}
 
 		currentTimer -= d;
@@ -276,6 +290,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.ChargeSlide);
+			return;
 		}
 
 		currentTimer -= d;
@@ -291,7 +306,25 @@ public class MechanicalArmsBoss : Boss
 	{
 		if(currentTimer <= 0)
 		{
+			fsm.ChangeState(States.SlideAttack);
+			return;
+		}
+
+		currentTimer -= d;
+	}
+
+	//SLIDEATTACK===================================================
+	protected virtual void EnterSlideAttack()
+	{
+		DoArmsMove(States.SlideAttack);
+	}
+
+	protected virtual void UpdateSlideAttack(float d)
+	{
+		if (currentTimer <= 0)
+		{
 			fsm.ChangeState(States.SlideSaw);
+			return;
 		}
 
 		currentTimer -= d;
@@ -310,6 +343,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.FollowPlayer);
+			return;
 		}
 
 		currentTimer -= d;
@@ -340,23 +374,39 @@ public class MechanicalArmsBoss : Boss
 	//SLEEP========================================================
 	protected virtual void EnterSleep()
 	{
+		currentPosition = positions[(int)States.Sleep];
 
+		leftArmTarget.localPosition = currentPosition.leftArm;
+		rightArmTarget.localPosition = currentPosition.rightArm;
+
+		followSmooth = currentPosition.followSmooth;
 	}
 
 	protected virtual void UpdateSleep(float d)
 	{
-
+		
 	}
 
 	//AWAKENING========================================================
 	protected virtual void EnterAwakening()
 	{
-
+		DoArmsMove(States.Awakening);
 	}
 
 	protected virtual void UpdateAwakening(float d)
 	{
+		if(currentTimer <= 0)
+		{
+			fsm.ChangeState(States.Idle);
+			return;
+		}
 
+		currentTimer -= d;
+	}
+
+	protected virtual void ExitAwakening()
+	{
+		arena.EnablePlayer();
 	}
 
 	//CHARGEATTACKBOTHHAND========================================================
@@ -370,6 +420,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.AttackBothHand);
+			return;
 		}
 
 		wholeTargetPosition = GetPlayerDelta();
@@ -388,6 +439,7 @@ public class MechanicalArmsBoss : Boss
 		if (currentTimer <= 0)
 		{
 			fsm.ChangeState(States.FollowPlayer);
+			return;
 		}
 
 		currentTimer -= d;
@@ -404,6 +456,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			fsm.ChangeState(States.SlideBothHandsTogether);
+			return;
 		}
 
 		currentTimer -= d;

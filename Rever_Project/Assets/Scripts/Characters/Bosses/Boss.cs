@@ -5,6 +5,7 @@ using Zenject;
 
 public class Boss : MonoCached
 {
+	[SerializeField] protected ArenaController arena;
 	[SerializeField] protected Transform playerCheckPositionFrom;
 
 	protected GameManager game;
