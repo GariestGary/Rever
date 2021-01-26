@@ -8,9 +8,9 @@ public class EnemyHitProvider : MonoBehaviour, IHitProvider
 	[SerializeField] private Controller2D controller;
 	[SerializeField] private float recoilMultiplier;
 
-	public void ProvideHit(int amount, Vector3 position)
+	public void ProvideHit(HitInfo info)
 	{
-		health.Hit(amount);
-		controller.AddForce((transform.position - position).normalized * recoilMultiplier);
+		health.Hit(info);
+		controller.AddForce((transform.position - new Vector3(info.from.x, info.from.y)).normalized * recoilMultiplier);
 	}
 }

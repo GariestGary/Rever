@@ -6,6 +6,11 @@ public class HitSide
 {
     public static Side CalculateHitSide(Vector2 hitInitiator, Vector2 hitReceiver)
 	{
+        if(hitInitiator == hitReceiver)
+		{
+            return Side.NONE;
+		}
+
         Vector2 hitDirection = hitInitiator - hitReceiver;
 
         float angle = Vector2.SignedAngle(Vector2.up, hitDirection);
@@ -47,12 +52,14 @@ public class HitSide
 public class HitInfo
 {
     public int damage;
+    public float force;
     public Vector2 from;
 
-	public HitInfo(int damage, Vector2 from)
+	public HitInfo(int damage, Vector2 from, float force = 1)
 	{
 		this.damage = damage;
 		this.from = from;
+        this.force = force;
 	}
 }
 
@@ -62,4 +69,5 @@ public enum Side
     BOTTOM,
     LEFT,
     RIGHT,
+    NONE,
 }

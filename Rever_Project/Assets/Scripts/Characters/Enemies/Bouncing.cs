@@ -38,8 +38,10 @@ public class Bouncing : EnemyBase
     private void SetupFSM()
 	{
         var stateList = new List<State<States>>();
+
         stateList.Add(new State<States>(States.Bounce, EnterBounce, null, UpdateBounce));
         stateList.Add(new State<States>(States.Chase, EnterChase, null, UpdateChase));
+
         fsm = new StateMachine<States>(stateList.ToArray(), States.Bounce);
     }
 
@@ -105,8 +107,6 @@ public class Bouncing : EnemyBase
 	}
 	#endregion
 
-	
-
     //TODO: delete if doesn't need
     protected bool IsWallStuck()
 	{
@@ -123,7 +123,7 @@ public class Bouncing : EnemyBase
 	{
         if (collision.TryGetComponent(out Player player))
         {
-            player.TryTakeDamage(new HitInfo(damage, t.position));
+			player.PlayerHealth.Hit(new HitInfo(damage, t.position));
         }
     }
 }

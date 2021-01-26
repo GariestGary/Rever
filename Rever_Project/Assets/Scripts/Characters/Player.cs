@@ -14,8 +14,6 @@ public class Player : MonoCached
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
 	[Space]
-	[SerializeField] private float invulnerabilityTime;
-	[Space]
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
 	[Space]
@@ -24,7 +22,7 @@ public class Player : MonoCached
 	[SerializeField] private List<ScriptableObject> abilities = new List<ScriptableObject>();
 	public Health PlayerHealth { get; private set; }
 	public bool IsUpdatingTurn { get; set; }
-	public bool IsInvulnerable => currentInvulnerabilityTime > 0;
+	
 	public Vector2 position => new Vector2(t.position.x, t.position.y);
 
 	private Controller2D controller;
@@ -39,7 +37,7 @@ public class Player : MonoCached
 	private bool subscribed = false;
 	private bool facingRight = true;
 
-	private float currentInvulnerabilityTime = 0;
+	
 
 	private Action onJump;
 
@@ -67,7 +65,7 @@ public class Player : MonoCached
 		AnimationUpdate();
 		TurnHandle(input.MoveInput.x);
 		InteractHandle();
-		InvulnerabilityUpdate();
+		PlayerHealth.HealthUpdate();
 
 		for (int i = 0; i < abilities.Count; i++)
 		{
@@ -93,7 +91,7 @@ public class Player : MonoCached
 
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
 		{
-			PlayerHealth.Hit((int)x.data);
+			PlayerHealth.Hit((HitInfo)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SubscribeInput();
@@ -212,28 +210,25 @@ public class Player : MonoCached
 		}
 	}
 
-	private void InvulnerabilityUpdate()
+	private void HandleDamage(HitInfo info)
 	{
-		if(currentInvulnerabilityTime > 0)
-		{
-			currentInvulnerabilityTime -= Time.deltaTime;
-		}
-	}
-
-	public void TryTakeDamage(HitInfo info)
-	{
-		if (IsInvulnerable)
-		{
-			return;
-		}
-
-		//TODO: side handle
-		//TODO: hit effect
 		Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
-
-		PlayerHealth.Hit(info.damage);
-		currentInvulnerabilityTime = invulnerabilityTime;
 	}
+
+	//public void TryTakeDamage(HitInfo info)
+	//{
+	//	if (IsInvulnerable)
+	//	{
+	//		return;
+	//	}
+
+	//	//TODO: side handle
+	//	//TODO: hit effect
+	//	Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
+
+	//	PlayerHealth.Hit(info);
+	//	currentInvulnerabilityTime = invulnerabilityTime;
+	//}
 
 	private void AnimationUpdate()
 	{

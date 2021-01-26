@@ -19,6 +19,7 @@ public class EnemyBase : MonoCached
 	[SerializeField] protected LayerMask groundLayer;
 	[Space]
 	[SerializeField] protected int damage = 1;
+	[SerializeField] protected float hitForce = 1;
 	[SerializeField] protected Vector2 attackBoxPosition;
 	[SerializeField] protected Vector2 attackBoxSize;
 	[Space]
@@ -229,7 +230,7 @@ public class EnemyBase : MonoCached
 
 			if(player)
 			{
-				player.TryTakeDamage(new HitInfo(damage, t.position));
+				player.PlayerHealth.Hit(new HitInfo(damage, t.position, hitForce));
 			}
 		}
 	}

@@ -9,6 +9,7 @@ public class ToxicClot : MonoCached, IPooledObject
 	[SerializeField] private SpriteRenderer renderer;
 	[SerializeField] private Rigidbody2D rb;
 	[SerializeField] private int damage;
+	[SerializeField] private float force;
 	[SerializeField] private LayerMask groundLayer;
 
 	private ObjectPoolManager pool;
@@ -48,7 +49,7 @@ public class ToxicClot : MonoCached, IPooledObject
 		{
 			if(!used)
 			{
-				health.Hit(damage);
+				health.Hit(new HitInfo(damage, transform.position, force));
 			}
 
 			Explode();

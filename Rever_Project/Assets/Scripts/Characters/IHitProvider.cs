@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IHitProvider
 {
-    void ProvideHit(int amount, Vector3 position);
+    void ProvideHit(HitInfo info);
 }

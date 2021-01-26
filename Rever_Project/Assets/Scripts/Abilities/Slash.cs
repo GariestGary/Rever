@@ -10,6 +10,7 @@ public class Slash : DefaultAbility
     [SerializeField] private Vector2 hitCheckSize;
 	[SerializeField] private float hitInterval;
 	[SerializeField] private int hitAmount;
+	[SerializeField] private float hitForce;
 
 	public override AbilityType Type => AbilityType.SLASH;
 
@@ -59,7 +60,7 @@ public class Slash : DefaultAbility
 			{
 				Debug.Log(hitable.name + " is hit provider");
 
-				provider.ProvideHit(hitAmount, playerTransform.position);
+				provider.ProvideHit(new HitInfo(hitAmount, playerTransform.position, hitForce));
 			}
 		}
 	}

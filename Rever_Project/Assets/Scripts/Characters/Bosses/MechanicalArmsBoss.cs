@@ -34,7 +34,8 @@ public class MechanicalArmsBoss : Boss
 	private float followSmooth;
 	private bool awakened = false;
 	private bool dead = false;
-	private bool pipeHitted;
+	private bool pipeHitted = false;
+	private bool stabbed = false;
 	private Vector3 wholeTargetPosition;
 	private Vector3 initLeftArmTargetPos;
 	private Vector3 initRightArmTargetPos;
@@ -101,6 +102,8 @@ public class MechanicalArmsBoss : Boss
 		Dead, 
 		Damaged,
 		HitPipe,
+		StabSelf,
+		TakeOutHammer,
 	}
 
 	private StateMachine<States> fsm;
@@ -196,11 +199,53 @@ public class MechanicalArmsBoss : Boss
 		states.Add(new State<States>(States.SlideBothHandsTogether, EnterSlideBothHandsTogether, null, UpdateSlideBothHandsTogether));
 		states.Add(new State<States>(States.Dead, EnterDead, null, UpdateDead));
 		states.Add(new State<States>(States.HitPipe, EnterHitPipe, null, UpdateHitPipe));
+		states.Add(new State<States>(States.StabSelf, EnterStabSelf, null, UpdateStabSelf));
+		states.Add(new State<States>(States.TakeOutHammer, EnterTakeOutHammer, null, UpdateTakeOutHammer));
 	
 		fsm = new StateMachine<States>(states.ToArray(), States.Sleep);
 	}
 
 	#region states
+
+	//STABSELF=====================================================
+	protected virtual void EnterStabSelf()
+	{
+		DoArmsMove(States.StabSelf);
+	}
+
+	protected virtual void UpdateStabSelf(float d)
+	{
+		if(currentTimer <= currentPosition.additionalTime && !stabbed)
+		{
+			stabbed = true;
+			//TODO: particles
+		}
+
+		if(currentTimer <= 0)
+		{
+			fsm.ChangeState(States.TakeOutHammer);
+			return;
+		}
+
+		currentTimer -= d;
+	}
+
+	//TAKEOUTHAMMER=====================================================
+	protected virtual void EnterTakeOutHammer()
+	{
+		DoArmsMove(States.TakeOutHammer);
+		//TODO: spawn hammer upgrade
+	}
+
+	protected virtual void UpdateTakeOutHammer(float d)
+	{
+		if(currentTimer <= 0)
+		{
+			fsm.ChangeState(States.Dead);
+		}
+
+		currentTimer -= d;
+	}
 
 	//HITPIPE=====================================================
 	protected virtual void EnterHitPipe()
