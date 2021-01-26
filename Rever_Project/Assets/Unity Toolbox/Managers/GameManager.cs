@@ -149,6 +149,7 @@ public class GameManager : ManagerBase, IExecute
 		else
 		{
 			FindObjectsOfType<MonoBehaviour>().Where(x => x is ISceneChange).ToList().ForEach(x => (x as ISceneChange).OnSceneChange());
+			currentLevelHandler.Dispose();
 			RemoveUpdatesFromScene(SceneManager.GetSceneByName(currentSceneName));
 			save.Save();
 			unloadingLevel = SceneManager.UnloadSceneAsync(currentSceneName);

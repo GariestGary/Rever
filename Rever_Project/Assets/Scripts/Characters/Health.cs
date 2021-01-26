@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 public class Health : MonoBehaviour
 {
 	[SerializeField] private int initialHitPoints;
 
-	public event Action OnHealthChange;
-	public event Action OnDeath;
+	public UnityEvent HealthChangeEvent;
+	public UnityEvent DeathEvent;
 
 	public HitPoints HP => hp;
 	public bool Dead => dead;
@@ -31,14 +32,15 @@ public class Health : MonoBehaviour
 
 	public void Hit(int amount)
 	{
+		Debug.Log("hitted " + amount);
 		if (dead) return;
 
 		hp.Hit(amount);
-		OnHealthChange?.Invoke();
+		HealthChangeEvent?.Invoke();
 
 		if(hp.currentHitPoints <= 0)
 		{
-			OnDeath?.Invoke();
+			DeathEvent?.Invoke();
 			dead = true;
 		}
 	}
@@ -47,7 +49,7 @@ public class Health : MonoBehaviour
 	{
 		dead = false;
 		hp.Reset();
-		OnHealthChange?.Invoke();
+		HealthChangeEvent?.Invoke();
 	}
 
 }

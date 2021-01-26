@@ -51,14 +51,14 @@ public class EnemySpawner : Saveable
 	{
 		spawnerState.deathPosition = currentEnemy.transform.position;
 		spawnerState.enemyDead = true;
-		currentEnemy.SelfHealth.OnDeath -= EnemyDeathHandle;
+		currentEnemy.SelfHealth.DeathEvent.RemoveListener(EnemyDeathHandle);
 	}
 
 	private void SpawnEnemy()
 	{
 		GameObject enemy = pool.Spawn(enemyTag, transform.position, Quaternion.identity);
 		enemy.TryGetComponent(out currentEnemy);
-		currentEnemy.SelfHealth.OnDeath += EnemyDeathHandle;
+		currentEnemy.SelfHealth.DeathEvent.AddListener(EnemyDeathHandle);
 	}
 
 	private struct SpawnerState
@@ -71,7 +71,7 @@ public class EnemySpawner : Saveable
 	{
 		if(currentEnemy)
 		{
-			currentEnemy.SelfHealth.OnDeath -= EnemyDeathHandle;
+			currentEnemy.SelfHealth.DeathEvent.RemoveListener(EnemyDeathHandle);
 		}
 	}
 

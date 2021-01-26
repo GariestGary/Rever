@@ -10,4 +10,5 @@ public enum ServiceShareData
     UPDATE_UI,
     HIT_CHARACTER,
     ITEM_TAKED,
+    FACTORY_HIT_PIPE,
 }

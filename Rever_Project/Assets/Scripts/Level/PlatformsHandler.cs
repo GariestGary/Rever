@@ -30,7 +30,7 @@ public class PlatformsHandler : Saveable
 				foreach (var platform in platforms)
 				{
 					platform.Disable();
-					(switcher as ISwitcher).OnEnable += platform.Enable;
+					(switcher as ISwitcher).EnableEvent.AddListener(platform.Enable);
 				}
 			}
 			else
@@ -87,7 +87,7 @@ public class PlatformsHandler : Saveable
 		{
 			foreach (var platform in platforms)
 			{
-				(switcher as ISwitcher).OnEnable -= platform.Enable;
+				(switcher as ISwitcher).EnableEvent.AddListener(platform.Enable);
 			}
 		}
 	}

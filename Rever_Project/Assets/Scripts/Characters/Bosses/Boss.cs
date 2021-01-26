@@ -9,6 +9,7 @@ public class Boss : MonoCached
 	[SerializeField] protected Transform playerCheckPositionFrom;
 
 	protected GameManager game;
+	protected MessageManager msg;
 
     protected Health bossHealth;
 	protected Animator anim;
@@ -16,9 +17,10 @@ public class Boss : MonoCached
 	protected Player player;
 
 	[Inject]
-	public void Constructor(GameManager game)
+	public void Constructor(GameManager game, MessageManager msg)
 	{
 		this.game = game;
+		this.msg = msg;
 	}
 
 	public override void Rise()
@@ -27,6 +29,8 @@ public class Boss : MonoCached
 		anim = GetComponentInChildren<Animator>();
 		playerTransform = game.CurrentPlayer.transform;
 		player = game.CurrentPlayer;
+
+		bossHealth.Initialize();
 	}
 
 	protected Vector2 GetDirectionToPlayer()

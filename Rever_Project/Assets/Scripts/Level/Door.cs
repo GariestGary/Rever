@@ -26,7 +26,10 @@ public class Door : Saveable
 
 	public override void Rise()
 	{
-		(switcher as ISwitcher).OnEnable += OpenDoor;
+		if(switcher)
+		{
+			(switcher as ISwitcher).EnableEvent.AddListener(OpenDoor);
+		}
 
 		if(openAtStart)
 		{
@@ -42,6 +45,8 @@ public class Door : Saveable
 
 	public void OpenDoor()
 	{
+		Debug.Log("open");
+
 		if(opened || moving)
 		{
 			return;
@@ -96,9 +101,12 @@ public class Door : Saveable
 	}
 	#endregion
 
-	private void OnDisable()
+	public override void OnRemove()
 	{
-		(switcher as ISwitcher).OnEnable -= OpenDoor;
+		if(switcher)
+		{
+			(switcher as ISwitcher).EnableEvent.AddListener(OpenDoor);
+		}
 	}
 
 #if UNITY_EDITOR

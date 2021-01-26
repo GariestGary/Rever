@@ -21,12 +21,14 @@ public class ArenaController : Saveable
 
 	private GameManager game;
 	private InputManager input;
+	private MessageManager msg;
 
 	[Inject]
-	public void Constructor(GameManager game, InputManager input)
+	public void Constructor(GameManager game, InputManager input, MessageManager msg)
 	{
 		this.game = game;
 		this.input = input;
+		this.msg = msg;
 	}
 
 	public override void Rise()
@@ -35,7 +37,7 @@ public class ArenaController : Saveable
 
 		if(useSwitcher && switcher)
 		{
-			(switcher as ISwitcher).OnEnable += PrepareArena;
+			(switcher as ISwitcher).EnableEvent.AddListener(PrepareArena);
 		}
 	}
 
@@ -94,6 +96,6 @@ public class ArenaController : Saveable
 
 	public override void OnRemove()
 	{
-		if (switcher) (switcher as ISwitcher).OnEnable -= PrepareArena;
+		if (switcher) (switcher as ISwitcher).EnableEvent.RemoveListener(PrepareArena);
 	}
 }

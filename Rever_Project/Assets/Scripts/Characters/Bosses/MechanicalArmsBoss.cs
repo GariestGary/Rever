@@ -32,6 +32,9 @@ public class MechanicalArmsBoss : Boss
 
 	private float currentTimer;
 	private float followSmooth;
+	private bool awakened = false;
+	private bool dead = false;
+	private bool pipeHitted;
 	private Vector3 wholeTargetPosition;
 	private Vector3 initLeftArmTargetPos;
 	private Vector3 initRightArmTargetPos;
@@ -97,6 +100,7 @@ public class MechanicalArmsBoss : Boss
 		AttackBothHand, 
 		Dead, 
 		Damaged,
+		HitPipe,
 	}
 
 	private StateMachine<States> fsm;
@@ -121,6 +125,7 @@ public class MechanicalArmsBoss : Boss
 
 	private void DoArmsMove(States state, bool overrideLeftX = false, float leftX = 0, bool overrideRightX = false, float rightX = 0)
 	{
+		Debug.Log(state);
 		currentPosition = positions.Where(x => x.state == state).FirstOrDefault();
 
 		Vector3 left = currentPosition.leftArm;
@@ -136,14 +141,15 @@ public class MechanicalArmsBoss : Boss
 			right.x = rightX;
 		}
 
-		leftArmTarget.DOLocalMove(left, Random.Range(currentPosition.minDuration, currentPosition.maxDuration)).SetEase(currentPosition.ease);
-		rightArmTarget.DOLocalMove(right, Random.Range(currentPosition.minDuration, currentPosition.maxDuration)).SetEase(currentPosition.ease);
+		float duration = Random.Range(currentPosition.minDuration, currentPosition.maxDuration);
+
+		leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.ease);
+		rightArmTarget.DOLocalMove(right, duration).SetEase(currentPosition.ease);
 
 		//leftArmTarget.DOShakePosition(currentPosition.duration, currentPosition.noiseInfluence.x * noiseInfluence);
 		//rightArmTarget.DOShakePosition(currentPosition.duration, currentPosition.noiseInfluence.y * noiseInfluence);
 
-		currentTimer = currentPosition.minDuration + currentPosition.additionalTime;
-		Debug.Log(state + " " + currentPosition.followSmooth);
+		currentTimer = duration + currentPosition.additionalTime;
 		followSmooth = currentPosition.followSmooth;
 	}
 
@@ -151,8 +157,11 @@ public class MechanicalArmsBoss : Boss
 	{
 		base.Tick();
 
-		fsm.Update(Time.deltaTime);
-		WholePositionUpdate();
+		if(!dead)
+		{
+			fsm.Update(Time.deltaTime);
+			WholePositionUpdate();
+		}
 	}
 
 	private void WholePositionUpdate()
@@ -186,11 +195,38 @@ public class MechanicalArmsBoss : Boss
 		states.Add(new State<States>(States.AttackBothHand, EnterAttackBothHand, null, UpdateAttackBothHand));
 		states.Add(new State<States>(States.SlideBothHandsTogether, EnterSlideBothHandsTogether, null, UpdateSlideBothHandsTogether));
 		states.Add(new State<States>(States.Dead, EnterDead, null, UpdateDead));
+		states.Add(new State<States>(States.HitPipe, EnterHitPipe, null, UpdateHitPipe));
 	
 		fsm = new StateMachine<States>(states.ToArray(), States.Sleep);
 	}
 
 	#region states
+
+	//HITPIPE=====================================================
+	protected virtual void EnterHitPipe()
+	{
+		DoArmsMove(States.HitPipe);
+
+		pipeHitted = false;
+	}
+
+	protected virtual void UpdateHitPipe(float d)
+	{
+		if(currentTimer <= currentPosition.additionalTime && !pipeHitted)
+		{
+			msg.Send(ServiceShareData.FACTORY_HIT_PIPE);
+			pipeHitted = true;
+		}
+
+		if(currentTimer <= 0)
+		{
+			awakened = true;
+			fsm.ChangeState(States.Idle);
+			return;
+		}
+
+		currentTimer -= d;
+	}
 
 	//IDLE========================================================
 	protected virtual void EnterIdle()
@@ -212,6 +248,7 @@ public class MechanicalArmsBoss : Boss
 	//DAMAGED=========================================================
 	protected virtual void EnterDamaged()
 	{
+		wholeTargetPosition = Vector3.zero;
 		DoArmsMove(States.Damaged);
 	}
 
@@ -264,7 +301,7 @@ public class MechanicalArmsBoss : Boss
 	//ATTACKONEHAND========================================================
 	protected virtual void EnterAttackOneHand()
 	{
-		DoArmsMove(States.AttackOneHand);//, true, game.CurrentPlayer.transform.position.x - leftArmTargetParent.position.x);
+		DoArmsMove(States.AttackOneHand, true, (game.CurrentPlayer.transform.position - leftArmTargetParent.position).x / 3.5f);
 	}
 
 	protected virtual void UpdateAttackOneHand(float d)
@@ -363,12 +400,20 @@ public class MechanicalArmsBoss : Boss
 	//DEATH========================================================
 	protected virtual void EnterDeath()
 	{
-
+		wholeTargetPosition = Vector3.zero;
+		DoArmsMove(States.Death);
+		//TODO: disable colliders and save
 	}
 
 	protected virtual void UpdateDeath(float d)
 	{
+		if(currentTimer <= 0)
+		{
+			fsm.ChangeState(States.Dead);
+			return;
+		}
 
+		currentTimer -= d;
 	}
 
 	//SLEEP========================================================
@@ -397,7 +442,7 @@ public class MechanicalArmsBoss : Boss
 	{
 		if(currentTimer <= 0)
 		{
-			fsm.ChangeState(States.Idle);
+			fsm.ChangeState(States.HitPipe);
 			return;
 		}
 
@@ -465,12 +510,18 @@ public class MechanicalArmsBoss : Boss
 	//DEAD========================================================
 	protected virtual void EnterDead()
 	{
-
+		wholeTargetPosition = Vector3.zero;
+		DoArmsMove(States.Dead);
 	}
 
 	protected virtual void UpdateDead(float d)
 	{
+		if(currentTimer <= 0)
+		{
+			dead = true;
+		}
 
+		currentTimer -= d;
 	}
 
 	#endregion states

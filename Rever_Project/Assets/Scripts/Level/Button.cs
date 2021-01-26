@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 public class Button : MonoCached
 {
@@ -21,8 +22,8 @@ public class Button : MonoCached
 	public bool Pressed => pressed;
 	public int StayingObjectsCount => stayingObjectsCount;
 
-	public event Action OnPress;
-    public event Action OnRelease;
+	public UnityEvent PressEvent;
+    public UnityEvent ReleaseEvent;
 
 	public override void Rise()
 	{
@@ -71,7 +72,7 @@ public class Button : MonoCached
 		
 		pressed = true;
 		renderer.sprite = pressedSprite;
-		OnPress?.Invoke();
+		PressEvent?.Invoke();
 
 		if(oncePressed)
 		{
@@ -87,6 +88,6 @@ public class Button : MonoCached
 
 		pressed = false;
 		renderer.sprite = releasedSprite;
-		OnRelease?.Invoke();
+		ReleaseEvent?.Invoke();
 	}
 }

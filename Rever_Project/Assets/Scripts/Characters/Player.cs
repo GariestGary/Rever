@@ -42,7 +42,6 @@ public class Player : MonoCached
 	private float currentInvulnerabilityTime = 0;
 
 	private Action onJump;
-	private Action onHealthChange;
 
 	[Inject]
 	public void Constructor(InputManager input, GameManager game, MessageManager msg)
@@ -111,7 +110,8 @@ public class Player : MonoCached
 
 	private void InitializeDelegates()
 	{
-		onHealthChange = delegate { msg.Send(ServiceShareData.UPDATE_UI, this, PlayerHealth.HP, "health"); };
+		//TODO: health component updates ui
+		//onHealthChange = delegate { msg.Send(ServiceShareData.UPDATE_UI, this, PlayerHealth.HP, "health"); };
 		onJump = delegate { anim.SetTrigger("Jump"); };
 	}
 
@@ -252,8 +252,6 @@ public class Player : MonoCached
 
 			if (input && controller && anim && PlayerHealth)
 			{
-				PlayerHealth.OnHealthChange += onHealthChange;
-
 				input.Interact += TryIntercat;
 
 				input.JumpStart += controller.OnJumpInputDown;
@@ -284,8 +282,6 @@ public class Player : MonoCached
 
 			if (input && controller && anim && PlayerHealth)
 			{
-				PlayerHealth.OnHealthChange -= onHealthChange;
-
 				input.Interact -= TryIntercat;
 
 				input.JumpStart -= controller.OnJumpInputDown;

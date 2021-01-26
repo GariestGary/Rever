@@ -123,6 +123,8 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
         obj.transform.SetParent(parent);
         obj.SetActive(true);
 
+        upd.AddGameObject(obj);
+
         //Call all spawn methods in gameobject
         IPooledObject[] pooled = obj.GetComponentsInChildren<IPooledObject>();
 
@@ -156,27 +158,31 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
     /// <summary>
     /// Removes GameObject from scene and returns it to pool
     /// </summary>
-    /// <param name="ObjectToDespawn">object to despawn</param>
+    /// <param name="objectToDespawn">object to despawn</param>
     /// <param name="delay">delay before despawning</param>
-    public void Despawn(GameObject ObjectToDespawn, int delay = 0)
+    public void Despawn(GameObject objectToDespawn, float delay = 0)
     {
-        if (ObjectToDespawn == null)
+        if (objectToDespawn == null)
         {
             return;
         }
 
         if(delay != 0)
 		{
-            Observable.Timer(new System.TimeSpan(0, 0, 0, 0, delay)).Subscribe(_ =>
-            {
-                ReturnToPool(ObjectToDespawn);
-            });
+            Toolbox.Instance.StartCoroutine(DespawnCoroutine(objectToDespawn, delay));
         }
         else
 		{
-            ReturnToPool(ObjectToDespawn);
+            ReturnToPool(objectToDespawn);
         }
     }
+
+    private IEnumerator DespawnCoroutine(GameObject objectToDespawn, float delay)
+	{
+        yield return new WaitForSeconds(delay);
+
+        ReturnToPool(objectToDespawn);
+	}
 
     /// <summary>
     /// Analogue to Unity's GameObject disable
@@ -185,14 +191,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
     public void DisableGameObject(GameObject obj)
 	{
         obj.SetActive(false);
-
-        var allMonos = obj.GetComponentsInChildren<MonoCached>();
-
-        for (int i = 0; i < allMonos.Length; i++)
-        {
-            allMonos[i].OnRemove();
-            upd.Remove(allMonos[i]);
-        }
+        upd.RemoveGameObject(obj);
     }
 
     /// <summary>
@@ -232,7 +231,11 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 
 			foreach (var obj in objectsToDestroyOnLevelChange)
 			{
-                obj.GetComponentsInChildren<MonoCached>().ToList().ForEach(tick => upd.Remove(tick));
+                obj.GetComponentsInChildren<MonoCached>().ToList().ForEach(tick =>
+                {
+                    tick.OnRemove();
+                    upd.Remove(tick);
+                });
                 Destroy(obj);
 			}
             

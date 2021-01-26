@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 public interface ISwitcher
 {
-	event Action OnEnable;
+	UnityEvent EnableEvent { get; }
 }

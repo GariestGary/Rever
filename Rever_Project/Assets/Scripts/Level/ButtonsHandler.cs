@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ButtonsHandler : Saveable, ISwitcher
 {
@@ -10,13 +11,15 @@ public class ButtonsHandler : Saveable, ISwitcher
 
 	private Dictionary<int, bool> buttonStates = new Dictionary<int, bool>();
 
-	public event Action OnEnable;
+	public UnityEvent enableEvent;
+
+	public UnityEvent EnableEvent { get { return enableEvent; } }
 
 	public override void Rise()
 	{
 		foreach (var button in buttons)
 		{
-			button.OnPress += ButtonCheck;
+			button.PressEvent.AddListener(ButtonCheck);
 		}
 	}
 
@@ -39,7 +42,7 @@ public class ButtonsHandler : Saveable, ISwitcher
 
 		if(pressedAll)
 		{
-			OnEnable?.Invoke();
+			EnableEvent?.Invoke();
 		}
 	}
 
@@ -79,7 +82,7 @@ public class ButtonsHandler : Saveable, ISwitcher
 	{
 		foreach (var button in buttons)
 		{
-			button.OnPress -= ButtonCheck;
+			button.PressEvent.RemoveListener(ButtonCheck);
 		}
 	}
 }
