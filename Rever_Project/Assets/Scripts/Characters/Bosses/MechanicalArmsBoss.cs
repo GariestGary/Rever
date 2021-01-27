@@ -17,6 +17,7 @@ public class MechanicalArmsBoss : Boss
 	[BoxGroup("Left Arm")] [SerializeField] private Transform leftArmTargetParent;
 	[Range(0, 1)]
 	[SerializeField] private float noiseInfluence;
+	[SerializeField] private float noiseVibrato;
 	[SerializeField] private float leftXMaxPosition;
 	[SerializeField] private float rightXMaxPosition;
 	[Range(0, 25)]
@@ -39,6 +40,10 @@ public class MechanicalArmsBoss : Boss
 	private Vector3 wholeTargetPosition;
 	private Vector3 initLeftArmTargetPos;
 	private Vector3 initRightArmTargetPos;
+
+	private Tween leftTween;
+	private Tween rightTween;
+
 	private ArmPositions currentPosition;
 
 	[System.Serializable]
@@ -57,6 +62,8 @@ public class MechanicalArmsBoss : Boss
 		[InfoBox("X for left arm, Y for right arm")]
 		[Space]
 		public Vector2 noiseInfluence;
+		public bool fadeOutNoiseLeft;
+		public bool fadeOutNoiseRight;
 		public Vector3 leftArm;
 		public Vector3 rightArm;
 
@@ -146,13 +153,17 @@ public class MechanicalArmsBoss : Boss
 
 		float duration = Random.Range(currentPosition.minDuration, currentPosition.maxDuration);
 
-		leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.ease);
+		leftArmTarget.DOKill();
+		rightArmTarget.DOKill();
 		rightArmTarget.DOLocalMove(right, duration).SetEase(currentPosition.ease);
-
-		//leftArmTarget.DOShakePosition(currentPosition.duration, currentPosition.noiseInfluence.x * noiseInfluence);
-		//rightArmTarget.DOShakePosition(currentPosition.duration, currentPosition.noiseInfluence.y * noiseInfluence);
+		leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.ease);
 
 		currentTimer = duration + currentPosition.additionalTime;
+		leftArmTargetParent.DOKill();
+		rightArmTargetParent.DOKill();
+		leftArmTargetParent.DOShakePosition(currentTimer, noiseInfluence * currentPosition.noiseInfluence.x, (int)(noiseVibrato * currentPosition.noiseInfluence.x), 90, false, currentPosition.fadeOutNoiseLeft);
+		rightArmTargetParent.DOShakePosition(currentTimer, noiseInfluence * currentPosition.noiseInfluence.y, (int)(noiseVibrato * currentPosition.noiseInfluence.y), 90, false, currentPosition.fadeOutNoiseRight);
+
 		followSmooth = currentPosition.followSmooth;
 	}
 
@@ -454,7 +465,7 @@ public class MechanicalArmsBoss : Boss
 	{
 		if(currentTimer <= 0)
 		{
-			fsm.ChangeState(States.Dead);
+			fsm.ChangeState(States.StabSelf);
 			return;
 		}
 
