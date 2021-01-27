@@ -11,4 +11,5 @@ public enum ServiceShareData
     HIT_CHARACTER,
     ITEM_TAKED,
     FACTORY_HIT_PIPE,
+    BOSS_DEFEATED,
 }

@@ -215,21 +215,6 @@ public class Player : MonoCached
 		Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
 	}
 
-	//public void TryTakeDamage(HitInfo info)
-	//{
-	//	if (IsInvulnerable)
-	//	{
-	//		return;
-	//	}
-
-	//	//TODO: side handle
-	//	//TODO: hit effect
-	//	Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
-
-	//	PlayerHealth.Hit(info);
-	//	currentInvulnerabilityTime = invulnerabilityTime;
-	//}
-
 	private void AnimationUpdate()
 	{
 		anim.SetFloat("Velocity X", controller.Velocity.x);
@@ -247,6 +232,8 @@ public class Player : MonoCached
 
 			if (input && controller && anim && PlayerHealth)
 			{
+				PlayerHealth.HealthChangeEvent.AddListener(HandleDamage);
+
 				input.Interact += TryIntercat;
 
 				input.JumpStart += controller.OnJumpInputDown;
@@ -277,6 +264,8 @@ public class Player : MonoCached
 
 			if (input && controller && anim && PlayerHealth)
 			{
+				PlayerHealth.HealthChangeEvent.RemoveListener(HandleDamage);
+
 				input.Interact -= TryIntercat;
 
 				input.JumpStart -= controller.OnJumpInputDown;

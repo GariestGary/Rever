@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class InteractableAbilityProvider : MonoCached, IInteractable
+public class InteractableAbilityProvider : MonoCached, IInteractable, IPooledObject
 {
 	[SerializeField] private AbilityType abilityToProvide;
 	[SerializeField] private bool usePhysics;
@@ -20,6 +20,11 @@ public class InteractableAbilityProvider : MonoCached, IInteractable
 	{
 		this.pool = pool;
 		this.msg = msg;
+	}
+
+	public void OnSpawn(object data, ObjectPoolManager pool)
+	{
+		abilityToProvide = (AbilityType)data;
 	}
 
 	public override void Rise()

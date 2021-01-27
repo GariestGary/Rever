@@ -5,10 +5,13 @@ using UnityEngine;
 using Zenject;
 using NaughtyAttributes;
 using UnityEngine.Events;
+using System;
+using UniRx;
 
 public class ArenaController : Saveable
 {
 	[SerializeField] private float afterDoorCloseWaitTime;
+	[SerializeField] private float afterConfineWaitTime;
 	[SerializeField] private List<Door> doorsToClose;
 	[SerializeField] private bool useSwitcher;
 	[ShowIf("useSwitcher")] [SerializeField] private MonoBehaviour switcher;
@@ -18,6 +21,7 @@ public class ArenaController : Saveable
 	private bool defeated = false;
 
     private CameraConfinerComponent confiner;
+	private IDisposable bossDeathMessageDisposable;
 
 	private GameManager game;
 	private InputManager input;
@@ -73,11 +77,16 @@ public class ArenaController : Saveable
 
 	private IEnumerator PrepareArenaCoroutine()
 	{
-		input.TrySetDefaultInputActive(false, true);
-		confiner.ConfineCamera();
-		doorsToClose.ForEach(x => x.CloseDoor());
+		bossDeathMessageDisposable = msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.BOSS_DEFEATED).Subscribe( _ => StartCoroutine(OnBossDefeatedCoroutine()));
 
+		doorsToClose.ForEach(x => x.CloseDoor());
+		input.TrySetDefaultInputActive(false, true);
 		yield return new WaitForSeconds(afterDoorCloseWaitTime);
+
+		confiner.ConfineCamera();
+
+
+		yield return new WaitForSeconds(afterConfineWaitTime);
 
 		ArenaPreparedEvent?.Invoke();
 
@@ -92,6 +101,18 @@ public class ArenaController : Saveable
 		//doorsToClose.ForEach(x => x.OpenDoor());
 		//confiner.ResetCamera();
 		//input.TrySetDefaultInputActive(true, true);
+	}
+
+	private IEnumerator OnBossDefeatedCoroutine()
+	{
+		yield return new WaitForSeconds(2);
+
+		defeated = true;
+		doorsToClose.ForEach(x => x.OpenDoor());
+		confiner.ResetCamera();
+		input.TrySetDefaultInputActive(true, true);
+
+		bossDeathMessageDisposable.Dispose();
 	}
 
 	public override void OnRemove()

@@ -5,9 +5,6 @@ using UnityEngine;
 using NaughtyAttributes;
 using System.Linq;
 using DG.Tweening;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 public class MechanicalArmsBoss : Boss
 {
@@ -58,7 +55,14 @@ public class MechanicalArmsBoss : Boss
 		public float maxDuration;
 		public float additionalTime;
 		public float followSmooth;
+		public bool useCurve;
+		[AllowNesting]
+		[ShowIf("notUseCurve")]
 		public Ease ease = Ease.InQuad;
+		[AllowNesting]
+		[ShowIf("useCurve")]
+		[CurveRange(0, 0, 1, 1)]
+		public AnimationCurve curve;
 		[InfoBox("X for left arm, Y for right arm")]
 		[Space]
 		public Vector2 noiseInfluence;
@@ -66,6 +70,8 @@ public class MechanicalArmsBoss : Boss
 		public bool fadeOutNoiseRight;
 		public Vector3 leftArm;
 		public Vector3 rightArm;
+
+		private bool notUseCurve => !useCurve;
 
 		private void ChangeName()
 		{
@@ -155,8 +161,17 @@ public class MechanicalArmsBoss : Boss
 
 		leftArmTarget.DOKill();
 		rightArmTarget.DOKill();
-		rightArmTarget.DOLocalMove(right, duration).SetEase(currentPosition.ease);
-		leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.ease);
+
+		if(currentPosition.useCurve)
+		{
+			rightArmTarget.DOLocalMove(right, duration).SetEase(currentPosition.curve);
+			leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.curve);
+		}
+		else
+		{
+			rightArmTarget.DOLocalMove(right, duration).SetEase(currentPosition.ease);
+			leftArmTarget.DOLocalMove(left, duration).SetEase(currentPosition.ease);
+		}
 
 		currentTimer = duration + currentPosition.additionalTime;
 		leftArmTargetParent.DOKill();
@@ -218,7 +233,7 @@ public class MechanicalArmsBoss : Boss
 
 	#region states
 
-	//STABSELF=====================================================
+	//STAB SELF=====================================================
 	protected virtual void EnterStabSelf()
 	{
 		DoArmsMove(States.StabSelf);
@@ -241,11 +256,11 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//TAKEOUTHAMMER=====================================================
+	//TAKE OUT HAMMER=====================================================
 	protected virtual void EnterTakeOutHammer()
 	{
 		DoArmsMove(States.TakeOutHammer);
-		//TODO: spawn hammer upgrade
+		pool.Spawn("Ability Provider", leftArmTarget.position, Quaternion.identity, null, AbilityType.SLASH);
 	}
 
 	protected virtual void UpdateTakeOutHammer(float d)
@@ -258,7 +273,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//HITPIPE=====================================================
+	//HIT PIPE=====================================================
 	protected virtual void EnterHitPipe()
 	{
 		DoArmsMove(States.HitPipe);
@@ -319,7 +334,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//FOLLOWPLAYER========================================================
+	//FOLLOW PLAYER========================================================
 	protected virtual void EnterFollowPlayer()
 	{
 		DoArmsMove(States.FollowPlayer);
@@ -335,7 +350,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//CHARGEATTACKONEHAND========================================================
+	//CHARGE ATTACK ONE HAND========================================================
 	protected virtual void EnterChargeAttackOneHand()
 	{
 		DoArmsMove(States.ChargeAttackOneHand);
@@ -354,7 +369,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//ATTACKONEHAND========================================================
+	//ATTACK ONE HAND========================================================
 	protected virtual void EnterAttackOneHand()
 	{
 		DoArmsMove(States.AttackOneHand, true, (game.CurrentPlayer.transform.position - leftArmTargetParent.position).x / 3.5f);
@@ -371,7 +386,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//SLIDETOSIDE========================================================
+	//SLIDE TO SIDE========================================================
 	protected virtual void EnterSlideToSide()
 	{
 		DoArmsMove(States.SlideToSide);
@@ -389,7 +404,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//CHARGESLIDE========================================================
+	//CHARGE SLIDE========================================================
 	protected virtual void EnterChargeSlide()
 	{
 		DoArmsMove(States.ChargeSlide);
@@ -406,7 +421,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//SLIDEATTACK===================================================
+	//SLIDE ATTACK===================================================
 	protected virtual void EnterSlideAttack()
 	{
 		DoArmsMove(States.SlideAttack);
@@ -423,7 +438,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//SLIDESAW========================================================
+	//SLIDE SAW========================================================
 	protected virtual void EnterSlideSaw()
 	{
 		DoArmsMove(States.SlideSaw);
@@ -442,7 +457,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//SLIDETOCENTER========================================================
+	//SLIDE TO CENTER========================================================
 	protected virtual void EnterSlideToCenter()
 	{
 
@@ -510,7 +525,7 @@ public class MechanicalArmsBoss : Boss
 		arena.EnablePlayer();
 	}
 
-	//CHARGEATTACKBOTHHAND========================================================
+	//CHARGE ATTACK BOTH HAND========================================================
 	protected virtual void EnterChargeAttackBothHand()
 	{
 		DoArmsMove(States.ChargeAttackBothHand);
@@ -529,7 +544,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//SLIDEBOTHHANDSTOGETHER================================================
+	//SLIDE BOTH HANDS TOGETHER================================================
 	protected virtual void EnterSlideBothHandsTogether()
 	{
 		DoArmsMove(States.SlideBothHandsTogether);
@@ -546,7 +561,7 @@ public class MechanicalArmsBoss : Boss
 		currentTimer -= d;
 	}
 
-	//ATTACKBOTHHAND========================================================
+	//ATTACK BOTH HAND========================================================
 	protected virtual void EnterAttackBothHand()
 	{
 		DoArmsMove(States.AttackBothHand);
@@ -575,6 +590,7 @@ public class MechanicalArmsBoss : Boss
 		if(currentTimer <= 0)
 		{
 			dead = true;
+			msg.Send(ServiceShareData.BOSS_DEFEATED);
 		}
 
 		currentTimer -= d;

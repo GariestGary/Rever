@@ -55,9 +55,12 @@ public class ToxicClot : MonoCached, IPooledObject
 			Explode();
 			return;
 		}
+	}
 
+	private void OnCollisionEnter2D(Collision2D collision)
+	{
 		if (1 << collision.gameObject.layer == groundLayer.value)
-		{ 
+		{
 			Explode();
 			return;
 		}

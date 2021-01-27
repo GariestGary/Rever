@@ -1168,7 +1168,9 @@ TextureImporter:
       boneIndex[1]: 0
       boneIndex[2]: 0
       boneIndex[3]: 0
-    secondaryTextures: []
+    secondaryTextures:
+    - texture: {fileID: 2800000, guid: 8a55de85757f9b843963aa5307d92592, type: 3}
+      name: _Emission
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -10,6 +10,7 @@ public class Boss : MonoCached
 
 	protected GameManager game;
 	protected MessageManager msg;
+	protected ObjectPoolManager pool;
 
     protected Health bossHealth;
 	protected Animator anim;
@@ -17,10 +18,11 @@ public class Boss : MonoCached
 	protected Player player;
 
 	[Inject]
-	public void Constructor(GameManager game, MessageManager msg)
+	public void Constructor(GameManager game, MessageManager msg, ObjectPoolManager pool)
 	{
 		this.game = game;
 		this.msg = msg;
+		this.pool = pool;
 	}
 
 	public override void Rise()
