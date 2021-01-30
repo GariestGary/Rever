@@ -44,7 +44,6 @@ public class ToxicClot : MonoCached, IPooledObject
 	{
 		if (used) return;
 
-		Debug.Log(collision.name);
 		if (collision.TryGetComponent(out Health health))
 		{
 			if(!used)

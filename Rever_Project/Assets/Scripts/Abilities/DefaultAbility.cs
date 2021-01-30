@@ -5,6 +5,7 @@ using UnityEngine;
 public class DefaultAbility : ScriptableObject, IAbility
 {
 	protected bool enabled;
+	protected bool init = false;
 	public bool Enabled => enabled;
 
 	public virtual AbilityType Type => AbilityType.NONE;
@@ -45,11 +46,17 @@ public class DefaultAbility : ScriptableObject, IAbility
 
 	public virtual void Disable()
 	{
+		if (!enabled && init) return;
+
 		enabled = false;
+		init = true;
 	}
 
 	public virtual void Enable()
 	{
+		if (enabled && init) return;
+
 		enabled = true;
+		init = true;
 	}
 }

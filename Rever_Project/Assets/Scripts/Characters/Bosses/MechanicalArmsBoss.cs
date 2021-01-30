@@ -141,7 +141,6 @@ public class MechanicalArmsBoss : Boss
 
 	private void DoArmsMove(States state, bool overrideLeftX = false, float leftX = 0, bool overrideRightX = false, float rightX = 0)
 	{
-		Debug.Log(state);
 		currentPosition = positions.Where(x => x.state == state).FirstOrDefault();
 
 		Vector3 left = currentPosition.leftArm;
@@ -207,6 +206,7 @@ public class MechanicalArmsBoss : Boss
 	protected virtual void SetupFSM()
 	{
 		var states = new List<State<States>>();
+
 		states.Add(new State<States>(States.Idle, EnterIdle, null, UpdateIdle));
 		states.Add(new State<States>(States.Damaged, EnterDamaged, null, UpdateDamaged));
 		states.Add(new State<States>(States.FollowPlayer, EnterFollowPlayer, null, UpdateFollowPlayer));

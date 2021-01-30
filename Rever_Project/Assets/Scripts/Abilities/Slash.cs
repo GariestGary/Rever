@@ -21,12 +21,29 @@ public class Slash : DefaultAbility
 		base.AbilityAwake(character, anim);
 
 		readyToHit = true;
+		
+	}
+
+	public override void Enable()
+	{
+		base.Enable();
+
+		playerAnimator.enabled = false;
+		player.SpineHammer.gameObject.SetActive(true);
+		playerAnimator.enabled = true;
+	}
+
+	public override void Disable()
+	{
+		base.Disable();
+		playerAnimator.enabled = false;
+		player.SpineHammer.gameObject.SetActive(false);
+		playerAnimator.enabled = true;
 	}
 
 	public override void StartUse()
 	{
 		if (!enabled || !readyToHit) return;
-		Debug.Log("Slashed!!!");
 
 		playerAnimator.SetTrigger("Slash");
 		CheckHit();

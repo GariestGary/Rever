@@ -11,6 +11,11 @@ public class Player : MonoCached
 {
 	[SerializeField] private Animator anim;
 	[SerializeField] private Transform graphicsRoot;
+	[SerializeField] private Transform rightArm;
+	[SerializeField] private Transform leftArm;
+	[SerializeField] private Transform spine;
+	[SerializeField] private Transform spineHammer;
+	[SerializeField] private Transform handHammer;
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
 	[Space]
@@ -24,6 +29,11 @@ public class Player : MonoCached
 	public bool IsUpdatingTurn { get; set; }
 	
 	public Vector2 position => new Vector2(t.position.x, t.position.y);
+	public Transform RightArm => rightArm;
+	public Transform LeftArm => leftArm;
+	public Transform Spine => spine;
+	public Transform SpineHammer => spineHammer;
+	public Transform HandHammer => handHammer;
 
 	private Controller2D controller;
 	private InputManager input;
@@ -80,6 +90,16 @@ public class Player : MonoCached
 		{
 			(abilities[i] as IAbility).AbilityFixedUpdate();
 		}
+	}
+
+	public void HandHammerSetActive(int state)
+	{
+		handHammer.gameObject.SetActive(state > 0 ? true : false);
+	}
+
+	public void SpineHammerSetActive(int state)
+	{
+		spineHammer.gameObject.SetActive(state > 0 ? true : false);
 	}
 
 	private void InitializeSubscribes()
