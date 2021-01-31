@@ -19,6 +19,9 @@ public class Player : MonoCached
 	[SerializeField] private LayerMask groundLayer;
 	[SerializeField] private BoxCollider2D colliderBox;
 	[Space]
+	[SerializeField] private AudioSource audioSource;
+	[SerializeField] private AudioClip step;
+	[Space]
 	[SerializeField] private LayerMask interactableLayer;
 	[SerializeField] private float interactRadius;
 	[Space]
@@ -115,6 +118,12 @@ public class Player : MonoCached
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SubscribeInput();
+	}
+
+	public void Step()
+	{
+		audioSource.PlayOneShot(step);
+		audioSource.pitch = UnityEngine.Random.Range(1.1f, 1.2f);
 	}
 
 	public void TryIntercat()

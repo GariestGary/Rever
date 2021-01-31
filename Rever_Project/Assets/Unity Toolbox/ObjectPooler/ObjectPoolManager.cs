@@ -75,8 +75,7 @@ public class ObjectPoolManager : ManagerBase, IExecute, ISceneChange
 
     public GameObject Instantiate(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
 	{
-        GameObject obj;
-        obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
+        GameObject obj = _container.InstantiatePrefab(prefab, position, rotation, parent);
         upd.PrepareGameObject(obj);
         upd.AddGameObject(obj);
         return obj;

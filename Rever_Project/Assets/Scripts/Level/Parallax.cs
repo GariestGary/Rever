@@ -47,7 +47,7 @@ public class Parallax : MonoCached
 	{
 		for (int i = 0; i < sprites.Count; i++)
 		{
-			sprites[i].renderer.material.SetFloat("Radius", Mathf.Abs(sprites[i].sprite.position.z) * blurMultiplier);
+			sprites[i].renderer.material.SetFloat("_KernelSize", Mathf.Abs(sprites[i].sprite.position.z) * blurMultiplier);
 		}
 	}
 
