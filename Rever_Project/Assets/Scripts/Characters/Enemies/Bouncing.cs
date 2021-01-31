@@ -60,6 +60,7 @@ public class Bouncing : EnemyBase
 		{
 			currentInterval = 0;
 			fsm.ChangeState(States.Chase);
+			return;
 		}
 
 		AttackCheck();

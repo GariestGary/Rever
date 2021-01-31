@@ -247,14 +247,12 @@ public class EnemyBase : MonoCached
 			timeStep = 0.01f;
 		}
 
-		for (int i = 1; ; i++)
-		{
-			float time = timeStep * i;
+		float time = 0;
+		float step = 1;
 
-			if (time > maxTime)
-			{
-				return false;
-			}
+		while (time <= maxTime)
+		{
+			time = timeStep * step;
 
 			Vector3 pos = PlotTrajectoryAtTime(t.position, vel, time);
 
@@ -280,7 +278,7 @@ public class EnemyBase : MonoCached
 					return true;
 				}
 
-				if (angle < controller.MaxSlopeAngle)
+				if (angle < controller.MaxSlopeAngle && angle > 0)
 				{
 					return true;
 				}
@@ -289,7 +287,10 @@ public class EnemyBase : MonoCached
 			}
 
 			prev = pos;
+			step++;
 		}
+
+		return false;
 	}
 
 	protected Vector3 PlotTrajectoryAtTime(Vector3 start, Vector3 startVelocity, float time)
