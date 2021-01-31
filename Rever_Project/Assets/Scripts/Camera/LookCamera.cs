@@ -16,6 +16,11 @@ public class LookCamera : MonoCached
 		cam = GetComponent<CinemachineVirtualCamera>();
 	}
 
+	public override void Tick()
+	{
+		cam.UpdateCameraState(Vector3.up, Time.deltaTime);
+	}
+
 	public void SetTarget(Transform target)
 	{
 		if(!cam)

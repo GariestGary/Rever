@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using UniRx;
 
-[RequireComponent (typeof (Controller2D))]
 public class Player : MonoCached
 {
 	[SerializeField] private Animator anim;

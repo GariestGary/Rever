@@ -6,6 +6,7 @@ Shader "Custom/DefaultBlur"
 	{
 		[PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
 		_KernelSize("Kernel Size (N)", Range(1,100)) = 3
+		_MainTex_TexelSize("Texel Size", Float2) = 3
 		_Color("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap("Pixel snap", Float) = 0
 	}

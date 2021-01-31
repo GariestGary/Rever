@@ -6,8 +6,6 @@ public class Parallax : MonoCached
 {
 	[SerializeField] private float parallaxAmount;
 	[SerializeField] private float smoothing;
-	[SerializeField] private bool manualBlurSet;
-	[SerializeField] private float blurMultiplier;
 
     private List<ParallaxSprite> sprites = new List<ParallaxSprite>();
 
@@ -22,14 +20,9 @@ public class Parallax : MonoCached
 			Transform transformToAdd = transform.GetChild(i);
 			sprites.Add(new ParallaxSprite(transformToAdd, transformToAdd.position, transformToAdd.GetComponent<SpriteRenderer>()));
 		}
-
-		if(!manualBlurSet)
-		{
-			SetBlurAmount();
-		}
 	}
 
-	public override void LateTick()
+	public override void Tick()
 	{
 		for (int i = 0; i < sprites.Count; i++)
 		{
@@ -39,15 +32,6 @@ public class Parallax : MonoCached
 			targetPos.z = sprites[i].initPos.z;
 
 			sprites[i].sprite.position = targetPos;
-		}
-	}
-
-	[ContextMenu("Calculate Blur Amount")]
-	private void SetBlurAmount()
-	{
-		for (int i = 0; i < sprites.Count; i++)
-		{
-			sprites[i].renderer.material.SetFloat("_KernelSize", Mathf.Abs(sprites[i].sprite.position.z) * blurMultiplier);
 		}
 	}
 
