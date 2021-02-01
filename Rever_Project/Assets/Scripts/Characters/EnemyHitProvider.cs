@@ -6,11 +6,10 @@ public class EnemyHitProvider : MonoBehaviour, IHitProvider
 {
     [SerializeField] private Health health;
 	[SerializeField] private Controller2D controller;
-	[SerializeField] private float recoilMultiplier;
+	
 
-	public void ProvideHit(HitInfo info)
+	public void ProvideHit(HealthChangeInfo info)
 	{
-		health.Hit(info);
-		controller.AddForce((transform.position - new Vector3(info.from.x, info.from.y)).normalized * recoilMultiplier);
+		health.ChangeHealth(info);
 	}
 }

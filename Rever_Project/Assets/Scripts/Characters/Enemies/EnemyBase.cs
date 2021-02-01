@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Zenject;
+using DG.Tweening;
 
 public class EnemyBase : MonoCached
 {
 	[SerializeField] protected Transform graphicsRoot;
+	[SerializeField] protected SpriteRenderer renderer;
 	[SerializeField] protected Animator anim;
 	[Space]
 	[SerializeField] protected float playerSearchRadius = 5;
@@ -20,6 +22,7 @@ public class EnemyBase : MonoCached
 	[Space]
 	[SerializeField] protected int damage = 1;
 	[SerializeField] protected float hitForce = 1;
+	[SerializeField] private float recoilMultiplier;
 	[SerializeField] protected Vector2 attackBoxPosition;
 	[SerializeField] protected Vector2 attackBoxSize;
 	[Space]
@@ -41,8 +44,9 @@ public class EnemyBase : MonoCached
 	protected Player noticedPlayer;
 	protected Transform t;
 	protected float slopeAngle;
+	protected Sequence hitFlash;
 
-	private int facingDirection = 1;
+	protected int facingDirection = 1;
 
 	public int FacingDirection 
 	{ 
@@ -93,8 +97,22 @@ public class EnemyBase : MonoCached
 
 		t = transform;
 		controller = GetComponent<RigidBody2DController>();
-		t = transform;
 		c = GetComponent<Collider2D>();
+		health = GetComponent<Health>();
+	}
+
+
+	public override void Ready()
+	{
+		base.Ready();
+
+		health.Initialize();
+		health.HealthChangeEvent.AddListener(HitHandle);
+
+		hitFlash = DOTween.Sequence();
+
+		hitFlash.Append(renderer.DOColor(Color.red, 0.05f)).Append(renderer.DOColor(Color.white, 0.05f)).SetLoops(5).SetRecyclable(true).SetAutoKill(false);
+		hitFlash.Pause();
 	}
 
 	public override void Tick()
@@ -126,6 +144,15 @@ public class EnemyBase : MonoCached
 		if (!onRight && FacingDirection == 1)
 		{
 			SetFacingDirection(-1);
+		}
+	}
+
+	protected virtual void HitHandle(HealthChangeInfo info)
+	{
+		if(info.amount < 0)
+		{
+			hitFlash.Restart();
+			controller.RB.AddForce((transform.position - new Vector3(info.from.x, info.from.y)).normalized * recoilMultiplier);
 		}
 	}
 
@@ -230,7 +257,7 @@ public class EnemyBase : MonoCached
 
 			if(player)
 			{
-				player.PlayerHealth.Hit(new HitInfo(damage, t.position, hitForce));
+				player.PlayerHealth.ChangeHealth(new HealthChangeInfo(-damage, t.position, hitForce));
 			}
 		}
 	}

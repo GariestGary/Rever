@@ -53,6 +53,8 @@ public class Walking : EnemyBase
 
 	public override void Ready()
 	{
+		base.Ready();
+
 		SetupFSM();
 	}
 

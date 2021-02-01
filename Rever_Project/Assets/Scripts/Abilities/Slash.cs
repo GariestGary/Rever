@@ -73,11 +73,9 @@ public class Slash : DefaultAbility
 
 		foreach (var hitable in hitables)
 		{
-			if(hitable.TryGetComponent(out IHitProvider provider))
+			if(hitable.TryGetComponent(out Health provider))
 			{
-				Debug.Log(hitable.name + " is hit provider");
-
-				provider.ProvideHit(new HitInfo(hitAmount, playerTransform.position, hitForce));
+				provider.ChangeHealth(new HealthChangeInfo(-hitAmount, playerTransform.position, hitForce));
 			}
 		}
 	}

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IHitProvider
 {
-    void ProvideHit(HitInfo info);
+    void ProvideHit(HealthChangeInfo info);
 }

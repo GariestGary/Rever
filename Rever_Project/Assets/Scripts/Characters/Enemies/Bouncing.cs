@@ -25,6 +25,8 @@ public class Bouncing : EnemyBase
 
 	public override void Ready()
 	{
+		base.Ready();
+
 		SetupFSM();
 	}
 
@@ -117,14 +119,4 @@ public class Bouncing : EnemyBase
 
 		return Physics2D.Raycast(origin, Vector2.right * FacingDirection, c.bounds.size.x, groundLayer);
 	}
-
-	
-
-	protected virtual void OnTriggerStay2D(Collider2D collision)
-	{
-        if (collision.TryGetComponent(out Player player))
-        {
-			player.PlayerHealth.Hit(new HitInfo(damage, t.position));
-        }
-    }
 }

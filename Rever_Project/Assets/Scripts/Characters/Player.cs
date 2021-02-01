@@ -113,7 +113,7 @@ public class Player : MonoCached
 
 		msg.Broker.Receive<MessageBase>().Where(x => x.id == ServiceShareData.HIT_CHARACTER && x.tag == "player").Subscribe(x => 
 		{
-			PlayerHealth.Hit((HitInfo)x.data);
+			PlayerHealth.ChangeHealth((HealthChangeInfo)x.data);
 		}).AddTo(Toolbox.Instance.Disposables);
 
 		SubscribeInput();
@@ -238,9 +238,9 @@ public class Player : MonoCached
 		}
 	}
 
-	private void HandleDamage(HitInfo info)
+	private void HandleDamage(HealthChangeInfo info)
 	{
-		Debug.Log("player hitted at " + info.damage + " hp from " + info.from);
+		Debug.Log("player hitted at " + info.amount + " hp from " + info.from);
 	}
 
 	private void AnimationUpdate()

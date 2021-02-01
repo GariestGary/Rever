@@ -49,20 +49,6 @@ public class HitSide
     }
 }
 
-public class HitInfo
-{
-    public int damage;
-    public float force;
-    public Vector2 from;
-
-	public HitInfo(int damage, Vector2 from, float force = 1)
-	{
-		this.damage = damage;
-		this.from = from;
-        this.force = force;
-	}
-}
-
 public enum Side
 {
     TOP,

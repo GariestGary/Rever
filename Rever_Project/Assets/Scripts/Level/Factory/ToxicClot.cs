@@ -48,7 +48,7 @@ public class ToxicClot : MonoCached, IPooledObject
 		{
 			if(!used)
 			{
-				health.Hit(new HitInfo(damage, transform.position, force));
+				health.ChangeHealth(new HealthChangeInfo(-damage, transform.position, force));
 			}
 
 			Explode();
