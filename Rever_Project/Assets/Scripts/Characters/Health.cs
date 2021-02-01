@@ -53,7 +53,7 @@ public class Health : MonoBehaviour
 
 	public void Hit(HitInfo info)
 	{
-		if (dead) return;
+		if (dead || IsInvulnerable) return;
 
 		hp.Hit(info.damage);
 		HealthChangeEvent?.Invoke(info);
